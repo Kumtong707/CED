@@ -1,0 +1,2846 @@
+<!DOCTYPE html>
+<html lang="th" style="background:#000000!important;background-color:#000000!important;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CED Cause & Effect Graph</title>
+  <style>
+    * { box-sizing: border-box; }
+    /* สีดำคงที่ — ใช้ !important เพื่อไม่ให้ธีม SharePoint / parent page ทับ */
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: #000000 !important;
+      background-color: #000000 !important;
+      color: #e0e0e0;
+    }
+    .toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      padding: 10px 12px; background: #1a1a24; border-bottom: 1px solid #2a2a38;
+    }
+    .toolbar label { margin-right: 4px; }
+    .toolbar input[type="file"] { display: none; }
+    .toolbar button, .toolbar .btn {
+      padding: 8px 14px; border-radius: 6px; border: 1px solid #3a3a4a;
+      background: #252532; color: #e0e0e0; cursor: pointer; font-size: 13px;
+    }
+    .toolbar button:hover, .toolbar .btn:hover { background: #32324a; }
+    .toolbar button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .toolbar .search-wrap { display: flex; gap: 6px; align-items: center; }
+    .toolbar input[type="text"] {
+      padding: 8px 10px; border-radius: 6px; border: 1px solid #3a3a4a;
+      background: #1e1e2a; color: #e0e0e0; width: 180px; font-size: 13px;
+    }
+    .toolbar select {
+      padding: 7px 10px; border-radius: 6px; border: 1px solid #3a3a4a;
+      background: #1e1e2a; color: #e0e0e0; font-size: 13px;
+      min-width: 200px; max-width: min(420px, 40vw);
+    }
+    .toolbar .mode-wrap { display: flex; gap: 4px; }
+    .toolbar .mode-wrap button.active { background: #4a6cf7; border-color: #4a6cf7; }
+    #graph-container {
+      width: 100%;
+      height: calc(100vh - 52px);
+      min-height: 400px;
+      background: #000000 !important;
+      background-color: #000000 !important;
+    }
+    #tooltip {
+      position: fixed; max-width: 380px; padding: 10px 12px; background: #1e1e2a;
+      border: 1px solid #3a3a4a; border-radius: 8px; pointer-events: none;
+      z-index: 1000; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      display: none;
+    }
+    #tooltip .tt-tag { font-weight: 600; color: #a8c8ff; margin-bottom: 8px; word-break: break-word; }
+    #tooltip .tt-desc { color: #c8c8d0; word-break: break-word; line-height: 1.45; }
+    #relation-panel {
+      position: fixed; right: 12px; bottom: 12px; max-width: min(760px, 96vw); max-height: min(440px, 55vh);
+      background: #1a1a24; border: 1px solid #3a3a4a; border-radius: 8px;
+      padding: 10px; overflow: auto; font-size: 12px; z-index: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4); display: none;
+    }
+    #relation-panel.show { display: block; }
+    #relation-panel h4 { margin: 0 0 8px 0; color: #7ab8ff; font-size: 13px; }
+    #relation-panel .rel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    #relation-panel .rel-minimize-btn {
+      padding: 4px 8px; border-radius: 6px;
+      border: 1px solid #3a3a4a;
+      background: #252532; color: #e0e0e0; cursor: pointer;
+      font-size: 12px; line-height: 1; flex-shrink: 0;
+    }
+    #relation-panel .rel-minimize-btn:hover { background: #32324a; }
+    #relation-panel.minimized {
+      max-height: 52px;
+      overflow: hidden;
+      padding-bottom: 10px;
+    }
+    #relation-panel.minimized #relation-table-wrap { display: none; }
+    #relation-panel table { width: 100%; border-collapse: collapse; }
+    #relation-panel th, #relation-panel td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #2a2a38; }
+    #relation-panel th { color: #888; font-weight: 600; }
+    #relation-panel .rel-section-title { margin: 10px 0 6px 0; color: #8eb4ff; font-size: 12px; font-weight: 600; }
+    #relation-panel .rel-meta td { color: #c8c8d8; word-break: break-word; line-height: 1.4; }
+    #relation-panel .rel-ce th, #relation-panel .rel-ce td { font-size: 11px; vertical-align: top; word-break: break-word; line-height: 1.35; }
+    #relation-panel .rel-ce th { white-space: nowrap; }
+    #relation-panel .rel-empty { color: #777; font-size: 11px; margin: 6px 0 0 0; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 4px 0; font-size: 12px; align-items: center; }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+    .legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .legend-hints {
+      width: 100%;
+      display: flex; gap: 22px; flex-wrap: wrap; align-items: center;
+      padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid #2e2e3c;
+      font-size: 11px; color: #c8c8dc; font-weight: 500;
+    }
+    .search-autocomplete-wrap { position: relative; }
+    .search-autocomplete-wrap .search-input-row { display: flex; gap: 6px; align-items: center; }
+    .search-suggestions {
+      position: absolute; left: 0; top: 100%; margin-top: 4px; min-width: min(520px, 92vw);
+      max-height: 280px; overflow-y: auto; background: #1e1e2a; border: 1px solid #3a3a4a;
+      border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); z-index: 2000;
+      padding: 4px 0;
+    }
+    .search-suggestions[hidden] { display: none !important; }
+    .search-suggestion-item {
+      display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left;
+      padding: 8px 12px; border: none; background: transparent; color: #e8e8f0;
+      cursor: pointer; font-size: 12px; line-height: 1.35; border-left: 3px solid transparent;
+    }
+    .search-suggestion-item:hover, .search-suggestion-item.active {
+      background: #2a2a3c;
+    }
+    .search-suggestion-item.active { border-left-color: #6b8cff; }
+    .search-suggestion-item .sk {
+      flex-shrink: 0; font-size: 10px; font-weight: 700; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 4px; margin-top: 1px;
+    }
+    .sk-uzblock { background: #3d4f9e; color: #dbe4ff; }
+    .sk-cause { background: #166534; color: #bbf7d0; }
+    .sk-effect { background: #92400e; color: #fde68a; }
+    .search-suggestion-item .sl { word-break: break-word; }
+    .search-suggestion-empty { padding: 10px 14px; color: #888; font-size: 12px; }
+    .search-suggestion-hint { font-size: 11px; color: #6a6a78; padding: 8px 12px; border-top: 1px solid #2a2a38; line-height: 1.35; }
+  </style>
+</head>
+<body style="background:#000000!important;background-color:#000000!important;">
+  <div class="toolbar">
+    <label class="btn" for="file-input">📂 เลือก CSV/Excel</label>
+    <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
+    <span class="search-wrap">
+      <label for="uz-block-select">UZ BLOCK:</label>
+      <select id="uz-block-select" title="เลือก UZ เพื่อดู Cause/Effect ภายใน และ UZ ต้นทางที่เชื่อมเข้ามา" disabled>
+        <option value="">— โหลดไฟล์ก่อน —</option>
+      </select>
+    </span>
+    <span class="search-wrap search-autocomplete-wrap" id="search-autocomplete-wrap">
+      <label>ค้นหา (contain):</label>
+      <div class="search-input-row">
+        <input type="text" id="search-global" placeholder="พิมพ์เพื่อดูรายการแนะนำ แล้วเลือก หรือกดค้นหา" autocomplete="off" spellcheck="false">
+        <button type="button" id="btn-search">ค้นหา</button>
+      </div>
+      <div id="search-suggestions" class="search-suggestions" hidden role="listbox" aria-label="รายการแนะนำการค้นหา"></div>
+    </span>
+    <button type="button" id="btn-home" title="Reset selection">🏠 Home</button>
+    <button type="button" id="btn-back" title="กลับไปมุมมองที่แสดงก่อนหน้า" disabled>← ย้อนกลับ</button>
+    <button type="button" id="btn-reset-view">แสดงทั้งหมด</button>
+    <button type="button" id="btn-reset-isolate">ยกเลิก Isolate</button>
+    <span class="search-wrap">
+      <label title="คูณกับระยะอัตโนมัติ (~80% ของพื้นที่กราฟ)">สเกลระยะ:</label>
+      <input type="number" id="link-distance" value="165" min="40" max="500" style="width:70px">
+    </span>
+    <!-- 3D removed: keep 2D only -->
+    <div class="legend">
+      <div class="legend-hints">
+        <span>Click at line for focus</span>
+        <span>Red Border = Active to others UZ</span>
+      </div>
+      <span style="color:#d7d7e2; font-weight:700;">CAUSE AND EFFECT U-10600 &amp; U-10700 (HCU-3 &amp; RHCU) BY COO2</span>
+      <span><i style="background:#6b8cff;"></i> UZ BLOCK</span>
+      <span><i style="background:#4ade80;"></i> Cause</span>
+      <span><i style="background:#fbbf24;"></i> Effect</span>
+    </div>
+  </div>
+  <div id="graph-container" style="background:#000000!important;background-color:#000000!important;"></div>
+  <div id="tooltip"></div>
+  <div id="relation-panel">
+    <div class="rel-header">
+      <h4 style="margin:0; color:#7ab8ff; font-size:13px;">ความสัมพันธ์ (เลือกโหนด)</h4>
+      <button type="button" id="btn-minimize-rel" class="rel-minimize-btn" title="ย่อ/ขยายตาราง">−</button>
+    </div>
+    <div id="relation-table-wrap"></div>
+  </div>
+
+  <!-- SheetJS for Excel (optional - only needed for .xlsx) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- d3: collision + charge tuning -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <!-- force-graph 2D (vasturiano) - UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/force-graph/dist/force-graph.min.js"></script>
+
+  <script>
+(function () {
+  'use strict';
+
+  const TAG_PATTERN = /^\d+-[A-Z0-9]+\s*-\s*[\w\/\s]+$/i;
+
+  function parseEffectCell(text) {
+    if (!text || typeof text !== 'string') return null;
+    const t = text.trim();
+    const parts = t.split('_');
+    if (parts.length < 2) return null;
+    const action = parts[0];
+    // Support both:
+    // 1) Action_EffectTag_Description
+    // 2) Reset_EffectTag
+    // If description is missing, keep empty string.
+    for (let i = 1; i < parts.length - 1; i++) {
+      const seg = parts[i].trim();
+      if (TAG_PATTERN.test(seg)) {
+        const desc = parts.slice(i + 1).join('_').trim();
+        return { action, effectTag: seg, description: desc, raw: t };
+      }
+    }
+    // Case: only two segments, e.g. Reset_107-UZ-131A/B
+    const seg2 = parts[1].trim();
+    if (TAG_PATTERN.test(seg2)) {
+      const desc2 = parts.slice(2).join('_').trim();
+      return { action, effectTag: seg2, description: desc2, raw: t };
+    }
+    return null;
+  }
+
+  function normalizeTag(t) {
+    if (!t) return '';
+    return String(t).trim().replace(/\s+/g, ' ');
+  }
+
+  function searchLabelForNode(n) {
+    const trim = (s, max) => {
+      if (s == null || s === '') return '';
+      s = String(s).replace(/\s+/g, ' ').trim();
+      return s.length > max ? s.slice(0, Math.max(0, max - 1)) + '…' : s;
+    };
+    if (n.type === 'uzblock') return 'UZ BLOCK — ' + trim(n.uzBlock, 48);
+    if (n.type === 'cause') {
+      return 'Cause — ' + trim(n.causeTag, 36) + (n.causeDesc ? ' · ' + trim(n.causeDesc, 64) : '');
+    }
+    if (n.type === 'effect') {
+      const d = (n.effectDescs && n.effectDescs.length) ? n.effectDescs.join(' ') : (n.effectDesc || '');
+      return 'Effect — ' + trim(n.effectTag, 36) + (d ? ' · ' + trim(d, 64) : '');
+    }
+    return trim(n.name || n.id, 96);
+  }
+
+  function parseCSV(text) {
+    const rows = [];
+    let i = 0;
+    while (i < text.length) {
+      const row = [];
+      while (i < text.length) {
+        if (text[i] === '"') {
+          i++;
+          let cell = '';
+          while (i < text.length && text[i] !== '"') {
+            if (text[i] === '\\') { i++; if (i < text.length) cell += text[i++]; }
+            else cell += text[i++];
+          }
+          if (text[i] === '"') i++;
+          row.push(cell);
+        } else {
+          let cell = '';
+          while (i < text.length && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') cell += text[i++];
+          row.push(cell.trim());
+        }
+        if (i < text.length && (text[i] === '\n' || text[i] === '\r')) {
+          if (text[i] === '\r' && text[i + 1] === '\n') i += 2;
+          else i++;
+          break;
+        }
+        if (i < text.length && text[i] === ',') i++;
+      }
+      if (row.some(c => c !== '')) rows.push(row);
+    }
+    return rows;
+  }
+
+  function parseExcelFile(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = function () {
+        try {
+          const wb = XLSX.read(r.result, { type: 'array', raw: true });
+          const first = wb.SheetNames[0];
+          let sheet = wb.Sheets[first];
+          for (const n of wb.SheetNames) {
+            const s = wb.Sheets[n];
+            const a = XLSX.utils.sheet_to_json(s, { header: 1 });
+            if (a.length && a[0] && a[0].some(c => String(c).indexOf('UZ BLOCK') !== -1 || String(c).indexOf('Cause_Tag') !== -1)) {
+              sheet = s;
+              break;
+            }
+          }
+          const arr = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          resolve(arr);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      r.onerror = () => reject(new Error('Cannot read file'));
+      r.readAsArrayBuffer(file);
+    });
+  }
+
+  function parseCSVFile(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = function () {
+        const text = r.result;
+        const rows = parseCSV(text);
+        resolve(rows);
+      };
+      r.onerror = () => reject(new Error('Cannot read file'));
+      r.readAsText(file, 'UTF-8');
+    });
+  }
+
+  function buildGraphFromRows(rows) {
+    if (!rows.length || !rows[0]) return { nodes: [], links: [] };
+    const header = rows[0].map(c => String(c).trim());
+    const idx = {
+      causeDesc: header.indexOf('Cause_Description'),
+      causeTag: header.indexOf('Cause_Tag Number'),
+      causeFunc: header.indexOf('Cause_Function'),
+      uzBlock: header.indexOf('UZ BLOCK'),
+      uzBlockDesc: header.indexOf('UZ BLOCK_Description'),
+    };
+    const eCols = [];
+    for (let j = 0; j < header.length; j++) {
+      if (/^E\d+$/.test(header[j])) eCols.push(j);
+    }
+    if (idx.causeTag < 0 || idx.uzBlock < 0) {
+      console.warn('Expected columns: Cause_Tag Number, UZ BLOCK');
+      return { nodes: [], links: [] };
+    }
+
+    const nodes = [];
+    const links = [];
+    const nodeById = new Map();
+    const causeTagToNodeIds = new Map();
+    const effectTagToNodeIds = new Map();
+    const uzBlocks = new Set();
+    const rowByCause = new Map();
+    const uzBlockDescByBlock = new Map();
+
+    function safeEffectId(tag) {
+      return 'eff_' + normalizeTag(tag).replace(/\s+/g, '').replace(/\//g, '-');
+    }
+
+    function addNode(id, name, type, data) {
+      if (nodeById.has(id)) return nodeById.get(id);
+      const n = { id, name, type, ...data };
+      nodes.push(n);
+      nodeById.set(id, n);
+      return n;
+    }
+
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const uzBlock = normalizeTag(row[idx.uzBlock]);
+      const uzBlockDesc = (idx.uzBlockDesc >= 0 && row[idx.uzBlockDesc] != null) ? String(row[idx.uzBlockDesc]).trim() : '';
+      const causeTag = normalizeTag(row[idx.causeTag]);
+      const causeDesc = (row[idx.causeDesc] != null) ? String(row[idx.causeDesc]).trim() : '';
+      const causeFunc = (row[idx.causeFunc] != null) ? String(row[idx.causeFunc]).trim() : '';
+      if (!uzBlock || !causeTag) continue;
+
+      uzBlocks.add(uzBlock);
+      if (uzBlockDesc) {
+        if (!uzBlockDescByBlock.has(uzBlock)) uzBlockDescByBlock.set(uzBlock, new Set());
+        uzBlockDescByBlock.get(uzBlock).add(uzBlockDesc);
+      }
+      const blockId = 'uz_' + uzBlock;
+      addNode(blockId, uzBlock, 'uzblock', { uzBlock, causeTag: '', effectTag: '', description: '' });
+
+      const causeId = 'cause_' + causeTag + '_' + r;
+      addNode(causeId, causeTag, 'cause', {
+        causeTag, causeDesc, causeFunc, uzBlock, rowIndex: r, effectTag: '',
+        description: causeDesc || causeTag,
+      });
+      if (!causeTagToNodeIds.has(causeTag)) causeTagToNodeIds.set(causeTag, []);
+      causeTagToNodeIds.get(causeTag).push(causeId);
+      rowByCause.set(causeId, { row, idx, eCols, r });
+
+      links.push({ source: blockId, target: causeId, type: 'contains' });
+
+      for (let ei = 0; ei < eCols.length; ei++) {
+        const col = eCols[ei];
+        const cell = row[col];
+        const parsed = parseEffectCell(cell);
+        if (!parsed) continue;
+        const effectTagNorm = normalizeTag(parsed.effectTag);
+        const effectId = safeEffectId(parsed.effectTag);
+        let effectNode = nodeById.get(effectId);
+        if (!effectNode) {
+          effectNode = addNode(effectId, parsed.effectTag, 'effect', {
+            effectTag: parsed.effectTag,
+            effectActions: [],
+            effectDescs: [],
+            fromCauses: [],
+            uzBlock: '',
+            causeTag: '',
+            description: '',
+          });
+          effectNode.effectActions = [];
+          effectNode.effectDescs = [];
+          effectNode.fromCauses = [];
+          if (!effectTagToNodeIds.has(effectTagNorm)) effectTagToNodeIds.set(effectTagNorm, []);
+          effectTagToNodeIds.get(effectTagNorm).push(effectId);
+        }
+        effectNode.effectActions.push(parsed.action);
+        effectNode.effectDescs.push(parsed.description);
+        effectNode.fromCauses.push({ causeTag, causeId, action: parsed.action, effectDesc: parsed.description });
+        links.push({ source: causeId, target: effectId, type: 'effect', effectTag: parsed.effectTag, effectAction: parsed.action });
+      }
+    }
+
+    for (const link of links.slice()) {
+      if (link.type !== 'effect') continue;
+      const effectTag = link.effectTag;
+      const targetCauseIds = causeTagToNodeIds.get(normalizeTag(effectTag));
+      if (!targetCauseIds) continue;
+      const effectId = typeof link.target === 'object' ? link.target.id : link.target;
+      for (const targetId of targetCauseIds) {
+        if (targetId === link.source) continue;
+        links.push({
+          source: effectId,
+          target: targetId,
+          type: 'cause-link',
+          effectTag,
+          effectAction: link.effectAction,
+        });
+      }
+    }
+
+    const blockLinks = [];
+    const blockPairDone = new Set();
+    for (const link of links) {
+      if (link.type !== 'cause-link') continue;
+      const effectNode = nodeById.get(link.source);
+      const tgt = nodeById.get(link.target);
+      if (!effectNode || !tgt || tgt.type !== 'cause') continue;
+      const blockB = tgt.uzBlock;
+      (effectNode.fromCauses || []).forEach(fc => {
+        const causeA = nodeById.get(fc.causeId);
+        if (!causeA || !causeA.uzBlock || causeA.uzBlock === blockB) return;
+        const key = causeA.uzBlock + '->' + blockB;
+        if (blockPairDone.has(key)) return;
+        blockPairDone.add(key);
+        blockLinks.push({
+          source: 'uz_' + causeA.uzBlock,
+          target: 'uz_' + blockB,
+          type: 'block-link',
+        });
+      });
+    }
+
+    const uzBlockDescs = new Map();
+    nodes.forEach(n => {
+      if (n.type === 'cause' && n.uzBlock && n.causeDesc) {
+        if (!uzBlockDescs.has(n.uzBlock)) uzBlockDescs.set(n.uzBlock, new Set());
+        uzBlockDescs.get(n.uzBlock).add(n.causeDesc);
+      }
+    });
+    uzBlockDescByBlock.forEach((v, k) => uzBlockDescs.set(k, v));
+    nodes.forEach(n => {
+      if (n.type === 'uzblock' && n.uzBlock) {
+        const s = uzBlockDescs.get(n.uzBlock);
+        n.uzDesc = s ? Array.from(s).join(' ; ').substring(0, 600) : '';
+      }
+    });
+
+    function buildSearchIndex(g) {
+      const index = [];
+      g.nodes.forEach(n => {
+        const parts = [];
+        if (n.causeTag) parts.push(n.causeTag);
+        if (n.effectTag) parts.push(n.effectTag);
+        if (n.uzBlock) parts.push(n.uzBlock);
+        if (n.uzDesc) parts.push(n.uzDesc);
+        if (n.causeDesc) parts.push(n.causeDesc);
+        if (n.effectDescs && n.effectDescs.length) parts.push(n.effectDescs.join(' '));
+        else if (n.effectDesc) parts.push(n.effectDesc);
+        if (n.effectActions && n.effectActions.length) parts.push(n.effectActions.join(' '));
+        if (n.causeFunc) parts.push(n.causeFunc);
+        if (n.name) parts.push(n.name);
+        if (n.fromCauses && n.fromCauses.length) n.fromCauses.forEach(fc => { parts.push(fc.causeTag, fc.effectDesc || ''); });
+        index.push({
+          id: n.id,
+          text: parts.join(' ').toLowerCase(),
+          label: searchLabelForNode(n),
+          kind: n.type || '',
+        });
+      });
+      return index;
+    }
+
+    const graph = { nodes, links, blockLinks, nodeById, causeTagToNodeIds, effectTagToNodeIds, uzBlocks, searchIndex: buildSearchIndex({ nodes }) };
+    return graph;
+  }
+
+  function buildAdjacency(graph) {
+    const adj = new Map();
+    function addEdge(a, b) {
+      if (!a || !b) return;
+      if (!adj.has(a)) adj.set(a, []);
+      if (!adj.has(b)) adj.set(b, []);
+      adj.get(a).push(b);
+      adj.get(b).push(a);
+    }
+    graph.links.forEach(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      addEdge(s, t);
+    });
+    (graph.blockLinks || []).forEach(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      addEdge(s, t);
+    });
+    return adj;
+  }
+
+  function getConnectedComponent(graph, startNodeId) {
+    const out = new Set();
+    if (!startNodeId || !graph.nodeById.has(startNodeId)) return out;
+    const adj = buildAdjacency(graph);
+    const q = [startNodeId];
+    out.add(startNodeId);
+    while (q.length) {
+      const id = q.shift();
+      const nbrs = adj.get(id) || [];
+      for (let i = 0; i < nbrs.length; i++) {
+        const w = nbrs[i];
+        if (!out.has(w)) {
+          out.add(w);
+          q.push(w);
+        }
+      }
+    }
+    return out;
+  }
+
+  function linkNorm(l, which) {
+    const x = which === 's' ? l.source : l.target;
+    return typeof x === 'object' ? x.id : x;
+  }
+
+  /**
+   * UZ ที่เลือก: โหนด UZ + Cause/Effect ภายใน UZ นั้น
+   * + โหนด UZ ต้นทางที่ block-link เข้ามา (Effect จาก UZ อื่น → Cause ใน UZ นี้) เพื่อให้เห็น UZ ที่ “สั่งงาน” เข้ามา โดยไม่ดึง Effect ทั้งหมดของ UZ ต้นทาง
+   */
+  function getUzDrilldownSet(graph, uzBlockKey) {
+    const ids = new Set();
+    const uzId = 'uz_' + uzBlockKey;
+    if (!graph.nodeById.has(uzId)) return ids;
+    ids.add(uzId);
+
+    const causesInUz = [];
+    graph.nodes.forEach(n => {
+      if (n.type === 'cause' && n.uzBlock === uzBlockKey) {
+        ids.add(n.id);
+        causesInUz.push(n.id);
+      }
+    });
+
+    const causeSet = new Set(causesInUz);
+    graph.links.forEach(l => {
+      if (l.type !== 'effect') return;
+      const s = linkNorm(l, 's');
+      if (!causeSet.has(s)) return;
+      ids.add(linkNorm(l, 't'));
+    });
+
+    (graph.blockLinks || []).forEach(bl => {
+      const t = linkNorm(bl, 't');
+      if (t !== uzId) return;
+      const s = linkNorm(bl, 's');
+      if (s && graph.nodeById.has(s)) ids.add(s);
+    });
+
+    addDownstreamCauseUzFromEffectLinks(graph, ids);
+    return ids;
+  }
+
+  /** มุมมองแรกของ UZ: ไม่ใส่ Cause ใน set — แสดงเฉพาะ UZ + Effect (ลากเส้นสังเคราะห์ UZ→Effect ใน getVisibleGraph) + UZ ต้นทางจาก block-link */
+  function getUzDrilldownSetEffectsOnly(graph, uzBlockKey) {
+    const ids = new Set();
+    const uzId = 'uz_' + uzBlockKey;
+    if (!graph.nodeById.has(uzId)) return ids;
+    ids.add(uzId);
+
+    const causesInUz = [];
+    graph.nodes.forEach(n => {
+      if (n.type === 'cause' && n.uzBlock === uzBlockKey) {
+        causesInUz.push(n.id);
+      }
+    });
+
+    const causeSet = new Set(causesInUz);
+    graph.links.forEach(l => {
+      if (l.type !== 'effect') return;
+      const s = linkNorm(l, 's');
+      if (!causeSet.has(s)) return;
+      ids.add(linkNorm(l, 't'));
+    });
+
+    (graph.blockLinks || []).forEach(bl => {
+      const t = linkNorm(bl, 't');
+      if (t !== uzId) return;
+      const s = linkNorm(bl, 's');
+      if (s && graph.nodeById.has(s)) ids.add(s);
+    });
+
+    addDownstreamCauseUzFromEffectLinks(graph, ids);
+    return ids;
+  }
+
+  function populateUzBlockDropdown() {
+    const sel = document.getElementById('uz-block-select');
+    if (!sel) return;
+    if (!graphData || !graphData.uzBlocks || graphData.uzBlocks.size === 0) {
+      sel.innerHTML = '<option value="">— โหลดไฟล์ก่อน —</option>';
+      sel.disabled = true;
+      return;
+    }
+    const prev = sel.value;
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— เลือก UZ BLOCK —</option>';
+    const keys = Array.from(graphData.uzBlocks).sort((a, b) => String(a).localeCompare(String(b)));
+    keys.forEach(k => {
+      const n = graphData.nodeById.get('uz_' + k);
+      let label = k;
+      if (n && n.uzDesc) {
+        const short = String(n.uzDesc).replace(/\s+/g, ' ').trim();
+        label = short.length > 72 ? (k + ' — ' + short.slice(0, 69) + '…') : (k + (short ? ' — ' + short : ''));
+      }
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    if (prev && graphData.uzBlocks.has(prev)) sel.value = prev;
+  }
+
+  function syncUzBlockDropdown() {
+    const sel = document.getElementById('uz-block-select');
+    if (!sel || !graphData || !graphData.uzBlocks) return;
+    const ub = drillState.mode === 'uz' && drillState.uzBlock ? drillState.uzBlock : '';
+    if (ub && graphData.uzBlocks.has(ub)) sel.value = ub;
+    else sel.value = '';
+  }
+
+  function effectHasOutgoingCauseLinks(graph, effectId) {
+    let ok = false;
+    graph.links.forEach(l => {
+      if (l.type !== 'cause-link') return;
+      if (linkNorm(l, 's') === effectId) ok = true;
+    });
+    return ok;
+  }
+
+  function getEffectBridgeDrillSet(graph, effectId) {
+    const out = new Set([effectId]);
+    const crossCauses = [];
+    graph.links.forEach(l => {
+      if (l.type !== 'cause-link') return;
+      if (linkNorm(l, 's') !== effectId) return;
+      const tid = linkNorm(l, 't');
+      const cn = graph.nodeById.get(tid);
+      if (cn && cn.type === 'cause') crossCauses.push(tid);
+    });
+    graph.links.forEach(l => {
+      if (l.type !== 'effect') return;
+      if (!crossCauses.includes(linkNorm(l, 's'))) return;
+      out.add(linkNorm(l, 't'));
+    });
+    return out;
+  }
+
+  function getEffectDetailDisplayGraph(graph, effectId) {
+    const eff = graph.nodeById.get(effectId);
+    if (!eff || eff.type !== 'effect') return { nodes: [], links: [] };
+    const safe = effectId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const tagId = 'vd_' + safe + '_tag';
+    const descId = 'vd_' + safe + '_desc';
+    const descFull = (eff.effectDescs && eff.effectDescs.length) ? eff.effectDescs.join(' | ') : (eff.effectDesc || '—');
+    const tagNode = {
+      id: tagId,
+      name: eff.effectTag || 'Effect_Tag',
+      type: 'detail_tag',
+      effectTag: eff.effectTag || '',
+      causeTag: '',
+      uzBlock: '',
+    };
+    const descNode = {
+      id: descId,
+      name: descFull.length > 90 ? descFull.slice(0, 87) + '...' : descFull,
+      type: 'detail_desc',
+      detailText: descFull,
+      effectTag: '',
+      causeTag: '',
+      uzBlock: '',
+    };
+    return {
+      nodes: [tagNode, descNode],
+      links: [{ source: tagId, target: descId, type: 'detail-link' }],
+    };
+  }
+
+  function getOneStepNextSet(graph, startNodeId) {
+    const start = graph.nodeById.get(startNodeId);
+    if (!start) return new Set([startNodeId]);
+    const out = new Set([startNodeId]);
+
+    const norm = (x) => typeof x === 'object' ? x.id : x;
+
+    if (start.type === 'cause') {
+      // Cause -> (immediate) Effects only (one step) + โหนด UZ BLOCK ของ Cause นี้ (เส้น contains)
+      graph.links.forEach(l => {
+        if (l.type !== 'effect') return;
+        const s = norm(l.source);
+        if (s !== startNodeId) return;
+        out.add(norm(l.target));
+      });
+      if (start.uzBlock) {
+        const uzId = 'uz_' + start.uzBlock;
+        if (graph.nodeById.has(uzId)) out.add(uzId);
+      }
+      return out;
+    }
+
+    if (start.type === 'effect') {
+      // Effect -> Cause แม่: ลิงก์ Cause→Effect ปกติ + cause-link (Effect เป็นต้นทาง)
+      graph.links.forEach(l => {
+        if (l.type === 'effect') {
+          const t = norm(l.target);
+          if (t !== startNodeId) return;
+          const sid = norm(l.source);
+          const sn = graph.nodeById.get(sid);
+          if (sn && sn.type === 'cause') out.add(sid);
+          return;
+        }
+        if (l.type === 'cause-link') {
+          const s = norm(l.source);
+          if (s !== startNodeId) return;
+          const t = norm(l.target);
+          const tn = graph.nodeById.get(t);
+          if (tn && tn.type === 'cause') out.add(t);
+        }
+      });
+      return out;
+    }
+
+    // Default fallback: whole connected component
+    return getConnectedComponent(graph, startNodeId);
+  }
+
+  /** เพิ่ม uz_<block> เข้า set เมื่อมี Cause ใน set (เช่น ผลค้นหา) เพื่อให้เห็น UZ BLOCK → Cause */
+  function addUzBlockNodesForCausesInSet(graph, idSet) {
+    if (!graph || !idSet || !idSet.size) return;
+    idSet.forEach(id => {
+      const n = graph.nodeById.get(id);
+      if (!n || n.type !== 'cause' || !n.uzBlock) return;
+      const uzId = 'uz_' + n.uzBlock;
+      if (graph.nodeById.has(uzId)) idSet.add(uzId);
+    });
+  }
+
+  /**
+   * Effect_Tag (โหนด Effect) ไปเป็น Cause_Tag ในแถว/UZ อื่น (ลิงก์ cause-link) → ใส่ Cause ปลายทาง + UZ BLOCK ของ UZ นั้น
+   */
+  function addDownstreamCauseUzFromEffectLinks(graph, idSet) {
+    if (!graph || !idSet || !idSet.size) return;
+    const extra = [];
+    idSet.forEach(id => {
+      const n = graph.nodeById.get(id);
+      if (!n || n.type !== 'effect') return;
+      graph.links.forEach(l => {
+        if (l.type !== 'cause-link') return;
+        if (linkNorm(l, 's') !== id) return;
+        const causeId = linkNorm(l, 't');
+        const cn = graph.nodeById.get(causeId);
+        if (!cn || cn.type !== 'cause' || !cn.uzBlock) return;
+        const uzId = 'uz_' + cn.uzBlock;
+        if (graph.nodeById.has(uzId)) {
+          extra.push(causeId, uzId);
+        }
+      });
+    });
+    extra.forEach(eid => idSet.add(eid));
+  }
+
+  let graphData = null;
+  let isolatedSet = null;
+  /** 'home' | 'uz' | 'search' | 'effect_bridge' | 'effect_next_uz' | 'effect_detail' | 'effect_drill_up' — mode uz: uzShowCauses false = แสดงแค่ UZ→Effect; true = แสดง Cause ใน UZ */
+  let drillState = { mode: 'home' };
+  /** stack ของมุมมองก่อนเปลี่ยน (สำหรับปุ่มย้อนกลับ) */
+  let viewHistory = [];
+  let graphInstance = null;
+  let mode3d = false;
+  let container = null;
+  let lastPointer = { x: 0, y: 0 };
+  let lastNodeCount = 0;
+  let lastVisibleGraphForLayout = { nodes: [], links: [] };
+  let linkDistanceListenerAttached = false;
+  let layoutResizeTimer = null;
+  let layoutResizeListenerAttached = false;
+  /** โฟกัสจากคลิกเส้น Action: { nodeIds: Set, linkMatch(l) } | null */
+  let actionLinkFocus = null;
+  /** หน้าแรก UZ: หลัง simulation หยุด ให้ขยับเบาๆ รอบจุด grid */
+  let homeUzAmbientActive = false;
+
+  function isHomePageView() {
+    return drillState.mode === 'home' && !isolatedSet;
+  }
+
+  /** Drill UZ แบบเต็ม: แสดง Cause_Tag (ระดับเดียวกับตัวอย่างกราฟละเอียด) */
+  function isUzFullDrillWithCauses() {
+    return drillState.mode === 'uz' && !!drillState.uzBlock && drillState.uzShowCauses === true;
+  }
+
+  function noDirectionalParticlesView() {
+    return isHomePageView() || drillState.mode === 'effect_detail';
+  }
+
+  /** หน้าแรก: มีเฉพาะ UZ BLOCK + block-link */
+  function isHomeUzOverview(nodes, links) {
+    if (!isHomePageView()) return false;
+    if (!nodes || !nodes.length) return false;
+    if (!nodes.every(n => n.type === 'uzblock')) return false;
+    if (!links || !links.length) return true;
+    return links.every(l => (l.type || '') === 'block-link');
+  }
+
+  function clearHomeUzLayoutPropsOnNodes(nodes) {
+    if (!nodes) return;
+    nodes.forEach(n => {
+      delete n._homeLayoutX;
+      delete n._homeLayoutY;
+      delete n._homeMotionPhase;
+    });
+  }
+
+  function setHomeUzMotionPhases(nodes) {
+    if (!nodes) return;
+    nodes.forEach(nd => {
+      let h = 2166136261;
+      const s = String(nd.id || '');
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      nd._homeMotionPhase = (Math.abs(h) % 10000) / 10000 * Math.PI * 2;
+    });
+  }
+
+  function applyHomeUzAmbientDrawOffset() {
+    if (!isHomePageView() || !graphInstance) return;
+    const gd = graphInstance.graphData();
+    const ns = gd && gd.nodes;
+    if (!ns || !ns.length) return;
+    const t = performance.now() * 0.00038;
+    const amp = 2.9;
+    ns.forEach(n => {
+      if (n.type !== 'uzblock' || n._homeLayoutX == null) return;
+      if (n.fx != null || n.fy != null) return;
+      const ph = n._homeMotionPhase != null ? n._homeMotionPhase : 0;
+      n.x = n._homeLayoutX + amp * Math.sin(t * 0.95 + ph);
+      n.y = n._homeLayoutY + amp * Math.cos(t * 0.8 + ph * 1.65);
+    });
+  }
+
+  /**
+   * หน้าแรก: กระจาย UZ BLOCK ทั่วพื้นที่ (~80% viewport) แบบ spiral (Vogel)
+   * ไม่ใช้กริดแนวนอน — ใช้ทั้งความกว้างและความสูงของจอ
+   */
+  function assignHomeUzBlockTargets(nodes, links) {
+    const el = document.getElementById('graph-container');
+    const W = (el && el.clientWidth) || 920;
+    const H = (el && el.clientHeight) || 680;
+    const uw = W * VIEWPORT_LAYOUT_FRACTION;
+    const uh = H * VIEWPORT_LAYOUT_FRACTION;
+    const n = nodes.length;
+    if (!n) return;
+    clearHomeUzLayoutPropsOnNodes(nodes);
+    setHomeUzMotionPhases(nodes);
+    if (n === 1) {
+      nodes[0]._homeLayoutX = 0;
+      nodes[0]._homeLayoutY = 0;
+      return;
+    }
+
+    const marginX = uw * 0.04;
+    const marginY = uh * 0.04;
+    const rx = Math.max((uw - 2 * marginX) / 2, 1);
+    const ry = Math.max((uh - 2 * marginY) / 2, 1);
+    const golden = Math.PI * (3 - Math.sqrt(5));
+
+    const ordered = nodes.slice().sort((a, b) =>
+      String(a.id || '').localeCompare(String(b.id || ''), undefined, { numeric: true }));
+
+    for (let i = 0; i < n; i++) {
+      const theta = i * golden;
+      const rho = Math.sqrt((i + 0.5) / n);
+      ordered[i]._homeLayoutX = rho * rx * Math.cos(theta);
+      ordered[i]._homeLayoutY = rho * ry * Math.sin(theta);
+    }
+
+    pinHomeOppositeUzPair(nodes, uw);
+  }
+
+  /** หน้าแรก: ให้ 106-UZ-490 กับ 106-UZ-040 อยู่คนละซ้าย/ขวา */
+  function pinHomeOppositeUzPair(nodes, uw) {
+    const LEFT_TAG = '106-UZ-490';
+    const RIGHT_TAG = '106-UZ-040';
+    let nL = null;
+    let nR = null;
+    nodes.forEach(nd => {
+      if (nd.type !== 'uzblock') return;
+      const ub = nd.uzBlock || '';
+      if (ub === LEFT_TAG) nL = nd;
+      if (ub === RIGHT_TAG) nR = nd;
+    });
+    if (!nL || !nR) return;
+    const mx = uw * 0.41;
+    nL._homeLayoutX = -mx;
+    nR._homeLayoutX = mx;
+    const y = (nL._homeLayoutY + nR._homeLayoutY) / 2;
+    nL._homeLayoutY = y;
+    nR._homeLayoutY = y;
+  }
+
+  function removeHomeUzLayoutForces(g) {
+    if (!g || typeof g.d3Force !== 'function') return;
+    try {
+      g.d3Force('homeUx', null);
+      g.d3Force('homeUy', null);
+    } catch (e) { /* ignore */ }
+  }
+
+  /** อัปเดตเป้าหมาย home grid หลัง resize / เปลี่ยนสเกล */
+  function refreshHomeUzLayoutForces(g, nodes, links) {
+    if (!isHomeUzOverview(nodes, links) || !g || typeof g.d3Force !== 'function' || typeof d3 === 'undefined') return;
+    homeUzAmbientActive = false;
+    assignHomeUzBlockTargets(nodes, links);
+    const sx = 0.27;
+    g.d3Force('homeUx', d3.forceX(n => (n._homeLayoutX != null ? n._homeLayoutX : 0)).strength(n => (n.type === 'uzblock' && n._homeLayoutX != null ? sx : 0)));
+    g.d3Force('homeUy', d3.forceY(n => (n._homeLayoutY != null ? n._homeLayoutY : 0)).strength(n => (n.type === 'uzblock' && n._homeLayoutY != null ? sx : 0)));
+    nodes.forEach(nd => {
+      if (nd._homeLayoutX != null) {
+        nd.x = nd._homeLayoutX;
+        nd.y = nd._homeLayoutY;
+        nd.vx = 0;
+        nd.vy = 0;
+      }
+    });
+    if (typeof g.d3ReheatSimulation === 'function') g.d3ReheatSimulation();
+  }
+
+  /** Effect + Cause แม่ทันที + UZ ของแต่ละ Cause (สำหรับ drill up) */
+  function getEffectDrillUpSet(graph, effectId) {
+    const out = getOneStepNextSet(graph, effectId);
+    const uzAdd = [];
+    out.forEach(id => {
+      const n = graph.nodeById.get(id);
+      if (n && n.type === 'cause' && n.uzBlock) uzAdd.push('uz_' + n.uzBlock);
+    });
+    uzAdd.forEach(u => out.add(u));
+    return out;
+  }
+
+  function linkEndpointId(x) {
+    return typeof x === 'object' ? x.id : x;
+  }
+
+  /** Connected component (undirected) ของโหนด UZ ผ่าน block-link จาก seed */
+  function getUzBlockIdsInBlockLinkComponent(graph, seedUzId) {
+    const out = new Set();
+    if (!graph || !seedUzId || !graph.nodeById.has(seedUzId)) return out;
+    const adj = new Map();
+    (graph.blockLinks || []).forEach(bl => {
+      const u = linkEndpointId(bl.source);
+      const v = linkEndpointId(bl.target);
+      if (!adj.has(u)) adj.set(u, []);
+      if (!adj.has(v)) adj.set(v, []);
+      adj.get(u).push(v);
+      adj.get(v).push(u);
+    });
+    const q = [seedUzId];
+    out.add(seedUzId);
+    while (q.length) {
+      const u = q.shift();
+      const nbrs = adj.get(u);
+      if (!nbrs) continue;
+      for (let i = 0; i < nbrs.length; i++) {
+        const w = nbrs[i];
+        if (!out.has(w)) {
+          out.add(w);
+          q.push(w);
+        }
+      }
+    }
+    return out;
+  }
+
+  /** ซ่อนเส้น Cause(HS) → Effect เมื่อ E คอลัมน์เป็น Reset_* — ใช้ Reset box ที่โหนด Effect แทน */
+  function shouldHideHsResetEffectLink(link, graph) {
+    if (!graph || link.type !== 'effect') return false;
+    const act = String(link.effectAction || '').toUpperCase();
+    if (!act.includes('RESET')) return false;
+    const src = graph.nodeById.get(linkEndpointId(link.source));
+    if (!src || src.type !== 'cause') return false;
+    const ct = String(src.causeTag || '').toUpperCase();
+    return ct.includes('HS');
+  }
+
+  /** ซ่อนโหนด Cause HS ที่มีแต่ลิงก์ Reset ไป Effect (ทุกเส้นถูกซ่อนแล้ว — ไม่ต้องซ้ำกับ Reset box) */
+  function shouldHideHsResetOnlyCauseNode(graph, node) {
+    if (!graph || !node || node.type !== 'cause') return false;
+    if (!String(node.causeTag || '').toUpperCase().includes('HS')) return false;
+    const outgoing = [];
+    graph.links.forEach(l => {
+      if (l.type !== 'effect') return;
+      if (linkEndpointId(l.source) !== node.id) return;
+      outgoing.push(l);
+    });
+    if (outgoing.length === 0) return false;
+    return outgoing.every(l => shouldHideHsResetEffectLink(l, graph));
+  }
+
+  /** Reset box ข้าง Effect: เฉพาะเมื่อมี Reset จาก Cause ที่ Cause_Tag มี HS (Hand switch) */
+  function effectHasHsResetFromCause(node) {
+    if (!node || node.type !== 'effect' || !Array.isArray(node.fromCauses)) return false;
+    return node.fromCauses.some(fc => {
+      const a = String(fc && fc.action ? fc.action : '').toUpperCase();
+      const tag = String(fc && fc.causeTag ? fc.causeTag : '').toUpperCase();
+      return a.includes('RESET') && tag.includes('HS');
+    });
+  }
+
+  /** Effect_Tag เดียวกันมี Cause_Tag ใน UZ อื่น (ไม่ใช่แค่ UZ ของแถวที่ปล่อย Effect) — ใช้กรอบแดงบนโหนด Effect */
+  function effectTagIsCauseInOtherUzBlock(graph, node) {
+    if (!graph || !node || node.type !== 'effect' || !graph.causeTagToNodeIds) return false;
+    const tag = normalizeTag(node.effectTag || '');
+    if (!tag) return false;
+    const cids = graph.causeTagToNodeIds.get(tag);
+    if (!cids || !cids.length) return false;
+    const originUz = new Set();
+    (node.fromCauses || []).forEach(fc => {
+      const c = graph.nodeById.get(fc.causeId);
+      if (c && c.uzBlock) originUz.add(c.uzBlock);
+    });
+    for (let i = 0; i < cids.length; i++) {
+      const c = graph.nodeById.get(cids[i]);
+      if (!c || c.type !== 'cause' || !c.uzBlock) continue;
+      if (!originUz.has(c.uzBlock)) return true;
+    }
+    return false;
+  }
+
+  /** UZ BLOCK ที่มีแถว Cause_Tag = Effect_Tag ของโหนด effect (สำหรับ drill ต่อเป็นชั้นๆ) */
+  function getUzBlocksWhereEffectTagIsCause(graph, effectId) {
+    const eff = graph.nodeById.get(effectId);
+    if (!eff || eff.type !== 'effect' || !graph.causeTagToNodeIds) return [];
+    const tag = normalizeTag(eff.effectTag);
+    const cids = graph.causeTagToNodeIds.get(tag);
+    if (!cids || !cids.length) return [];
+    const uz = new Set();
+    cids.forEach(cid => {
+      const c = graph.nodeById.get(cid);
+      if (c && c.uzBlock) uz.add(c.uzBlock);
+    });
+    return Array.from(uz);
+  }
+
+  function appendEffectNextUzSyntheticLinks(links, visIds) {
+    if (drillState.mode !== 'effect_next_uz' || !drillState.effectId || !graphData) return;
+    const eid = drillState.effectId;
+    if (!visIds.has(eid)) return;
+    getUzBlocksWhereEffectTagIsCause(graphData, eid).forEach(ub => {
+      const tid = 'uz_' + ub;
+      if (visIds.has(tid)) {
+        links.push({ source: eid, target: tid, type: 'drill-next-uz' });
+      }
+    });
+  }
+
+  /**
+   * มุมมอง drill UZ: ไม่แสดงโหนด Effect ที่แท็กตรงกับ UZ BLOCK อื่นในระบบ (เช่น 106-UZ-441)
+   * เพื่อตัดเส้น Cause→Effect ที่ “ชี้ไป UZ อื่น” ที่รกกราฟ — เหลือบริบท UZ ที่เลือก + Cause + Effect ที่ไม่ใช่แท็ก UZ อื่น
+   */
+  function shouldHideCrossUzEffectInUzDrill(graph, node, currentUz) {
+    if (!graph || !node || node.type !== 'effect' || !currentUz) return false;
+    if (!graph.uzBlocks || !graph.uzBlocks.size) return false;
+    const tag = normalizeTag(node.effectTag || '');
+    if (!tag) return false;
+    if (tag === normalizeTag(currentUz)) return false;
+    return graph.uzBlocks.has(tag);
+  }
+
+  /** จัดกลุ่ม Action เดียวกัน (Trip/Close/...) ไป Effect เดียวกัน — ใช้รวบเส้น */
+  function normalizeEffectActionGroupKey(effectAction) {
+    const u = String(effectAction || '').trim().toUpperCase();
+    if (u.includes('TRIP')) return 'TRIP';
+    if (u.includes('CLOSE')) return 'CLOSE';
+    if (u.includes('OPEN')) return 'OPEN';
+    if (u.includes('ACTIVATE')) return 'ACTIVATE';
+    if (u.includes('RESET')) return 'RESET';
+    return u || 'OTHER';
+  }
+
+  /**
+   * ลิงก์ type=effect หลายเส้นที่ไป Effect เดียวกันด้วย Action กลุ่มเดียวกัน → Cause→โหนดรวม→Effect (แตกแขนงเข้า รวมออก)
+   */
+  function bundleEffectLinksBySameAction(nodes, links) {
+    if (!nodes || !links || links.length === 0) return;
+    const nById = new Map(nodes.map(n => [n.id, n]));
+    const effectLinks = [];
+    const otherLinks = [];
+    for (let i = 0; i < links.length; i++) {
+      const l = links[i];
+      if (l.type !== 'effect') {
+        otherLinks.push(l);
+        continue;
+      }
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      if (!nById.has(s) || !nById.has(t)) {
+        otherLinks.push(l);
+        continue;
+      }
+      effectLinks.push({ link: l, s, t });
+    }
+    const groups = new Map();
+    const GSEP = '\x1f'; // ไม่น่าปรากฏใน node id
+    effectLinks.forEach(({ link, s, t }) => {
+      const ak = normalizeEffectActionGroupKey(link.effectAction);
+      const compoundKey = t + GSEP + ak;
+      if (!groups.has(compoundKey)) groups.set(compoundKey, []);
+      groups.get(compoundKey).push({ s, t, link });
+    });
+    const extraNodes = [];
+    const outEffect = [];
+    groups.forEach((arr, compoundKey) => {
+      const sep = compoundKey.indexOf(GSEP);
+      const t = compoundKey.slice(0, sep);
+      const ak = compoundKey.slice(sep + 1);
+      if (arr.length < 2) {
+        arr.forEach(({ link }) => outEffect.push(link));
+        return;
+      }
+      const safeT = String(t).replace(/[^a-zA-Z0-9]/g, '_');
+      const bundleId = 'eb_' + safeT + '_' + ak;
+      const effNode = nById.get(t);
+      const tagLabel = effNode && effNode.effectTag ? effNode.effectTag : t;
+      const bn = {
+        id: bundleId,
+        type: 'effect_bundle',
+        name: ak,
+        bundleActionKey: ak,
+        effectTargetId: t,
+        effectTag: tagLabel,
+        bundleFanIn: arr.length,
+        causeTag: '',
+        uzBlock: '',
+      };
+      extraNodes.push(bn);
+      nById.set(bundleId, bn);
+      arr.forEach(({ s, link }) => {
+        outEffect.push({
+          source: s,
+          target: bundleId,
+          type: 'effect_bundle_in',
+          effectAction: link.effectAction,
+          effectTag: link.effectTag,
+        });
+      });
+      outEffect.push({
+        source: bundleId,
+        target: t,
+        type: 'effect_bundle_out',
+        effectAction: arr[0].link.effectAction,
+        effectTag: arr[0].link.effectTag,
+      });
+    });
+    links.length = 0;
+    otherLinks.forEach(l => links.push(l));
+    outEffect.forEach(l => links.push(l));
+    extraNodes.forEach(n => nodes.push(n));
+  }
+
+  function getVisibleGraph() {
+    if (!graphData) return { nodes: [], links: [] };
+    if (drillState.mode === 'effect_detail' && drillState.effectId) {
+      return getEffectDetailDisplayGraph(graphData, drillState.effectId);
+    }
+    let nodes, links;
+    if (isolatedSet && isolatedSet.size > 0) {
+      nodes = graphData.nodes.filter(n => isolatedSet.has(n.id));
+      nodes = nodes.filter(n => !shouldHideHsResetOnlyCauseNode(graphData, n));
+      if (drillState.mode === 'uz' && drillState.uzBlock) {
+        const curUz = drillState.uzBlock;
+        nodes = nodes.filter(n => !shouldHideCrossUzEffectInUzDrill(graphData, n, curUz));
+      }
+      const visIds = new Set(nodes.map(n => n.id));
+      links = graphData.links.filter(l => {
+        const s = typeof l.source === 'object' ? l.source.id : l.source;
+        const t = typeof l.target === 'object' ? l.target.id : l.target;
+        if (!visIds.has(s) || !visIds.has(t)) return false;
+        if (shouldHideHsResetEffectLink(l, graphData)) return false;
+        return true;
+      });
+      (graphData.blockLinks || []).forEach(bl => {
+        if (visIds.has(bl.source) && visIds.has(bl.target)) links.push(bl);
+      });
+      appendEffectNextUzSyntheticLinks(links, visIds);
+      if (drillState.mode === 'uz' && drillState.uzBlock && drillState.uzShowCauses === false) {
+        const uzId = 'uz_' + drillState.uzBlock;
+        if (visIds.has(uzId)) {
+          nodes.forEach(n => {
+            if (n.type === 'effect' && visIds.has(n.id)) {
+              links.push({ source: uzId, target: n.id, type: 'uz-effect' });
+            }
+          });
+        }
+      }
+      bundleEffectLinksBySameAction(nodes, links);
+    } else {
+      nodes = graphData.nodes.filter(n => n.type === 'uzblock');
+      links = (graphData.blockLinks || []).slice();
+    }
+    return { nodes, links };
+  }
+
+  function nodeColorBase(n) {
+    if (n.type === 'uzblock') return '#6b8cff';
+    if (n.type === 'cause' && n.causeTag && n.causeTag.toUpperCase().includes('HS')) return '#22c55e';
+    if (n.type === 'cause') return '#4ade80';
+    if (n.type === 'effect') return '#fbbf24';
+    if (n.type === 'effect_bundle') return '#64748b';
+    if (n.type === 'detail_tag') return '#f59e0b';
+    if (n.type === 'detail_desc') return '#8b5cf6';
+    return '#a0a0b0';
+  }
+
+  function nodeColor(n) {
+    if (actionLinkFocus && actionLinkFocus.nodeIds && !actionLinkFocus.nodeIds.has(n.id)) {
+      return '#4b4b58';
+    }
+    return nodeColorBase(n);
+  }
+
+  function linkColorBase(link) {
+    if (link.type === 'block-link' && isHomePageView()) {
+      return 'rgba(253, 186, 116, 0.9)';
+    }
+    if (link.type === 'cause-link' && isUzFullDrillWithCauses()) {
+      return 'rgba(200, 205, 225, 0.55)';
+    }
+    if (link.type === 'detail-link') return 'rgba(200,200,220,0.85)';
+    if (link.type === 'drill-next-uz') return '#22d3ee';
+    if (link.type === 'uz-effect') return 'rgba(245,245,252,0.92)';
+    if (link.type === 'effect_bundle_in' || link.type === 'effect_bundle_out') {
+      const a = (link.effectAction || '').toUpperCase();
+      if (a.includes('TRIP')) return '#ef4444';
+      if (a.includes('OPEN')) return '#22c55e';
+      if (a.includes('CLOSE')) return '#ef4444';
+      if (a.includes('ACTIVATE')) return '#3b82f6';
+      if (a.includes('RESET')) return '#d9f99d';
+      return 'rgba(180,180,200,0.72)';
+    }
+    const a = (link.effectAction || '').toUpperCase();
+    if (a.includes('TRIP')) return '#ef4444';
+    if (a.includes('OPEN')) return '#22c55e';
+    if (a.includes('CLOSE')) return '#ef4444';
+    if (a.includes('ACTIVATE')) return '#3b82f6';
+    if (a.includes('RESET')) return '#d9f99d';
+    return 'rgba(180,180,200,0.6)';
+  }
+
+  function linkColorDimAware(link) {
+    if (actionLinkFocus && actionLinkFocus.linkMatch && !actionLinkFocus.linkMatch(link)) {
+      return 'rgba(130,130,142,0.22)';
+    }
+    return linkColorBase(link);
+  }
+
+  function linkWidthForGraph(link) {
+    if (link.type === 'block-link' && isHomePageView()) return 1.35;
+    if (link.type === 'cause-link' && isUzFullDrillWithCauses()) return 1.22;
+    return 1;
+  }
+
+  function refreshActionLinkFocusStyles() {
+    if (!graphInstance) return;
+    if (typeof graphInstance.nodeColor === 'function') graphInstance.nodeColor(nodeColor);
+    if (typeof graphInstance.linkColor === 'function') graphInstance.linkColor(linkColorDimAware);
+  }
+
+  function clearActionLinkFocus() {
+    actionLinkFocus = null;
+    refreshActionLinkFocusStyles();
+  }
+
+  function setActionLinkFocusFromClick(link) {
+    if (!link || !graphInstance || typeof graphInstance.graphData !== 'function') return;
+    const typ = link.type || '';
+    const s = linkEndpointId(link.source);
+    const t = linkEndpointId(link.target);
+    let signature = typ + '\x1e' + s + '\x1e' + t;
+    if (typ === 'effect') {
+      signature += '\x1e' + normalizeEffectActionGroupKey(link.effectAction);
+    } else if (typ === 'effect_bundle_in' || typ === 'effect_bundle_out') {
+      signature += '\x1e' + normalizeEffectActionGroupKey(link.effectAction || '');
+    } else if (typ === 'block-link' && graphData) {
+      const uzCompSig = getUzBlockIdsInBlockLinkComponent(graphData, s);
+      signature = 'block-link-comp\x1e' + Array.from(uzCompSig).sort().join('\x1f');
+    } else if (typ === 'cause-link' && graphData) {
+      const cn = graphData.nodeById.get(t);
+      const tUb = cn && cn.type === 'cause' && cn.uzBlock ? cn.uzBlock : '';
+      signature = 'cause-link-focus\x1e' + s + '\x1e' + tUb;
+    }
+    if (actionLinkFocus && actionLinkFocus.signature === signature) {
+      clearActionLinkFocus();
+      return;
+    }
+    const gd = graphInstance.graphData();
+    const allLinks = (gd && gd.links) ? gd.links : [];
+    const nodeIds = new Set();
+    let linkMatch = null;
+
+    if (typ === 'effect') {
+      const effectId = t;
+      const ak = normalizeEffectActionGroupKey(link.effectAction);
+      nodeIds.add(effectId);
+      allLinks.forEach(l => {
+        if (l.type !== 'effect') return;
+        if (linkEndpointId(l.target) !== effectId) return;
+        if (normalizeEffectActionGroupKey(l.effectAction) !== ak) return;
+        nodeIds.add(linkEndpointId(l.source));
+      });
+      if (graphData) {
+        nodeIds.forEach(id => {
+          const n = graphData.nodeById.get(id);
+          if (n && n.type === 'cause' && n.uzBlock) {
+            const uz = 'uz_' + n.uzBlock;
+            if (graphData.nodeById.has(uz)) nodeIds.add(uz);
+          }
+        });
+      }
+      linkMatch = function (l) {
+        if (l.type !== 'effect') return false;
+        return linkEndpointId(l.target) === effectId && normalizeEffectActionGroupKey(l.effectAction) === ak;
+      };
+    } else if (typ === 'effect_bundle_in') {
+      const bundleId = t;
+      nodeIds.add(bundleId);
+      let effTgt = null;
+      (gd.nodes || []).forEach(n => {
+        if (n && n.id === bundleId && n.effectTargetId) effTgt = n.effectTargetId;
+      });
+      if (effTgt) nodeIds.add(effTgt);
+      allLinks.forEach(l => {
+        if (l.type === 'effect_bundle_in' && linkEndpointId(l.target) === bundleId) {
+          nodeIds.add(linkEndpointId(l.source));
+        }
+      });
+      if (graphData && effTgt) {
+        nodeIds.forEach(id => {
+          const n = graphData.nodeById.get(id);
+          if (n && n.type === 'cause' && n.uzBlock) {
+            const uz = 'uz_' + n.uzBlock;
+            if (graphData.nodeById.has(uz)) nodeIds.add(uz);
+          }
+        });
+      }
+      linkMatch = function (l) {
+        const ls = linkEndpointId(l.source);
+        const lt = linkEndpointId(l.target);
+        if (l.type === 'effect_bundle_in' && lt === bundleId) return true;
+        if (l.type === 'effect_bundle_out' && ls === bundleId) return true;
+        return false;
+      };
+    } else if (typ === 'effect_bundle_out') {
+      const bundleId = s;
+      const effectId = t;
+      nodeIds.add(bundleId);
+      nodeIds.add(effectId);
+      allLinks.forEach(l => {
+        if (l.type === 'effect_bundle_in' && linkEndpointId(l.target) === bundleId) {
+          nodeIds.add(linkEndpointId(l.source));
+        }
+      });
+      if (graphData) {
+        nodeIds.forEach(id => {
+          const n = graphData.nodeById.get(id);
+          if (n && n.type === 'cause' && n.uzBlock) {
+            const uz = 'uz_' + n.uzBlock;
+            if (graphData.nodeById.has(uz)) nodeIds.add(uz);
+          }
+        });
+      }
+      linkMatch = function (l) {
+        const ls = linkEndpointId(l.source);
+        const lt = linkEndpointId(l.target);
+        if (l.type === 'effect_bundle_in' && lt === bundleId) return true;
+        if (l.type === 'effect_bundle_out' && ls === bundleId && lt === effectId) return true;
+        return false;
+      };
+    } else if (typ === 'uz-effect') {
+      nodeIds.add(s);
+      nodeIds.add(t);
+      linkMatch = function (l) {
+        return l.type === 'uz-effect' && linkEndpointId(l.source) === s && linkEndpointId(l.target) === t;
+      };
+    } else if (typ === 'block-link') {
+      if (!graphData) return;
+      const uzComp = getUzBlockIdsInBlockLinkComponent(graphData, s);
+      uzComp.forEach(id => nodeIds.add(id));
+      linkMatch = function (l) {
+        if (l.type !== 'block-link') return false;
+        const ls = linkEndpointId(l.source);
+        const lt = linkEndpointId(l.target);
+        return uzComp.has(ls) && uzComp.has(lt);
+      };
+    } else if (typ === 'cause-link') {
+      if (!graphData) return;
+      const effNode = graphData.nodeById.get(s);
+      const causeNode = graphData.nodeById.get(t);
+      if (!effNode || effNode.type !== 'effect' || !causeNode || causeNode.type !== 'cause') return;
+      const targetUb = causeNode.uzBlock || '';
+      if (!targetUb) return;
+      const uzTarget = 'uz_' + targetUb;
+
+      nodeIds.add(s);
+      graphData.links.forEach(l => {
+        if (l.type !== 'cause-link') return;
+        if (linkEndpointId(l.source) !== s) return;
+        const cid = linkEndpointId(l.target);
+        const cn = graphData.nodeById.get(cid);
+        if (cn && cn.type === 'cause' && cn.uzBlock === targetUb) nodeIds.add(cid);
+      });
+      if (graphData.nodeById.has(uzTarget)) nodeIds.add(uzTarget);
+
+      graphData.links.forEach(l => {
+        if (l.type !== 'effect') return;
+        if (linkEndpointId(l.target) !== s) return;
+        const cid = linkEndpointId(l.source);
+        nodeIds.add(cid);
+        const c = graphData.nodeById.get(cid);
+        if (c && c.uzBlock) {
+          const uid = 'uz_' + c.uzBlock;
+          if (graphData.nodeById.has(uid)) nodeIds.add(uid);
+        }
+      });
+
+      linkMatch = function (l) {
+        const ls = linkEndpointId(l.source);
+        const lt = linkEndpointId(l.target);
+        if (!nodeIds.has(ls) || !nodeIds.has(lt)) return false;
+        const ty = l.type || '';
+        if (ty === 'effect' || ty === 'cause-link' || ty === 'contains' || ty === 'block-link') return true;
+        return false;
+      };
+    } else {
+      return;
+    }
+
+    actionLinkFocus = { nodeIds, linkMatch, signature };
+    refreshActionLinkFocusStyles();
+  }
+
+  function nodeLabel(n) {
+    if (n.type === 'uzblock') return n.uzBlock || n.name || n.id;
+    if (n.type === 'cause') return n.causeTag || n.name || n.id;
+    if (n.type === 'effect') return n.effectTag || n.name || n.id;
+    if (n.type === 'effect_bundle') return n.bundleActionKey || n.name || n.id;
+    return n.name || n.id;
+  }
+
+  function showTooltip(ev, node) {
+    const tip = document.getElementById('tooltip');
+    if (!node) {
+      tip.style.display = 'none';
+      return;
+    }
+    let tag = '';
+    let desc = '';
+    if (node.type === 'uzblock') {
+      tag = node.uzBlock || node.name || '—';
+      desc = node.uzDesc || '—';
+      let uzHint = '';
+      if (drillState.mode === 'uz' && drillState.uzBlock === node.uzBlock && drillState.uzShowCauses === false) {
+        uzHint = '<div class="tt-desc" style="margin-top:8px;color:#93c5fd;">คลิก UZ BLOCK นี้อีกครั้งเพื่อแสดง Cause_Tag Number</div>';
+      }
+      const px = (ev && ev.pageX != null) ? ev.pageX : lastPointer.x;
+      const py = (ev && ev.pageY != null) ? ev.pageY : lastPointer.y;
+      tip.innerHTML = '<div class="tt-tag">' + escapeHtml(tag) + '</div><div class="tt-desc">' + escapeHtml(desc) + '</div>' + uzHint;
+      tip.style.left = (px + 14) + 'px';
+      tip.style.top = (py + 14) + 'px';
+      tip.style.display = 'block';
+      return;
+    }
+    if (node.type === 'effect_bundle') {
+      tag = (node.bundleActionKey || '—') + ' → ' + (node.effectTag || '—');
+      desc = 'รวม ' + (node.bundleFanIn || 0) + ' เส้น (Action เดียวกัน) แล้วแตกไป Effect';
+      const px = (ev && ev.pageX != null) ? ev.pageX : lastPointer.x;
+      const py = (ev && ev.pageY != null) ? ev.pageY : lastPointer.y;
+      tip.innerHTML = '<div class="tt-tag">' + escapeHtml(tag) + '</div><div class="tt-desc">' + escapeHtml(desc) + '</div>';
+      tip.style.left = (px + 14) + 'px';
+      tip.style.top = (py + 14) + 'px';
+      tip.style.display = 'block';
+      return;
+    }
+    if (node.type === 'cause') {
+      tag = node.causeTag || '—';
+      desc = node.causeDesc || '—';
+    } else if (node.type === 'effect') {
+      tag = node.effectTag || '—';
+      desc = (node.effectDescs && node.effectDescs.length) ? node.effectDescs[0] : (node.effectDesc || '—');
+    } else if (node.type === 'detail_tag') {
+      tag = node.effectTag || node.name || '—';
+      desc = 'Effect_Tag Number';
+    } else if (node.type === 'detail_desc') {
+      tag = 'Effect_Description';
+      desc = node.detailText || node.name || '—';
+    } else {
+      tag = '—';
+      desc = '—';
+    }
+    const line1 = escapeHtml(tag);
+    const line2 = escapeHtml(desc);
+    let extra = '';
+    if (node.type === 'effect' && Array.isArray(node.fromCauses) && node.fromCauses.length) {
+      const resetBy = [];
+      node.fromCauses.forEach(fc => {
+        const a = String(fc && fc.action ? fc.action : '').toUpperCase();
+        const ct = String(fc && fc.causeTag ? fc.causeTag : '').trim();
+        if (a.includes('RESET') && ct && ct.toUpperCase().includes('HS')) resetBy.push(ct);
+      });
+      const uniq = Array.from(new Set(resetBy));
+      if (uniq.length) {
+        extra = '<div class="tt-desc" style="margin-top:6px;color:#d9f99d;">Reset by "' + escapeHtml(uniq.join(', ')) + '"</div>';
+      }
+    }
+    tip.innerHTML = '<div class="tt-tag">' + line1 + '</div><div class="tt-desc">' + line2 + '</div>' + extra;
+    const px = (ev && ev.pageX != null) ? ev.pageX : lastPointer.x;
+    const py = (ev && ev.pageY != null) ? ev.pageY : lastPointer.y;
+    tip.style.left = (px + 14) + 'px';
+    tip.style.top = (py + 14) + 'px';
+    tip.style.display = 'block';
+  }
+
+  /** สัดส่วนพื้นที่กราฟที่ต้องการให้โหนดกิน (เหลือขอบรอบๆ) */
+  const VIEWPORT_LAYOUT_FRACTION = 0.8;
+
+  function estimateDirectedDepth(nodes, links) {
+    if (!nodes || !nodes.length) return 3;
+    const ids = new Set(nodes.map(n => n.id));
+    const depth = new Map();
+    ids.forEach(id => depth.set(id, 0));
+    const edgeList = [];
+    (links || []).forEach(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      if (!ids.has(s) || !ids.has(t)) return;
+      edgeList.push([s, t]);
+    });
+    if (!edgeList.length) {
+      return Math.min(14, Math.max(2, Math.ceil(1.2 + Math.log2(nodes.length + 1))));
+    }
+    let changed = true;
+    let iter = 0;
+    const maxIter = nodes.length + 12;
+    while (changed && iter < maxIter) {
+      changed = false;
+      iter++;
+      edgeList.forEach(([s, t]) => {
+        const nd = (depth.get(s) || 0) + 1;
+        if (nd > (depth.get(t) || 0)) {
+          depth.set(t, nd);
+          changed = true;
+        }
+      });
+    }
+    let maxD = 0;
+    depth.forEach(v => { if (v > maxD) maxD = v; });
+    return Math.min(26, Math.max(2, maxD + 1));
+  }
+
+  /**
+   * ระยะ DAG + ฐานลิงก์แบบ dynamic จากขนาด #graph-container (~80% กว้าง/สูง)
+   * ผสมระยะแนวนอน (ชั้นกราฟ) กับแนวตั้ง (ความหนาแน่น) ให้สมดุล
+   */
+  function computeDynamicLayoutMetrics(nodes, links, nodeCount) {
+    const el = document.getElementById('graph-container');
+    const W = (el && el.clientWidth) || 920;
+    const H = (el && el.clientHeight) || 680;
+    const uw = W * VIEWPORT_LAYOUT_FRACTION;
+    const uh = H * VIEWPORT_LAYOUT_FRACTION;
+    const n = Math.max(1, nodeCount || (nodes && nodes.length) || 1);
+    const L = (nodes && nodes.length && links) ? estimateDirectedDepth(nodes, links) : Math.min(14, Math.max(3, Math.round(2 + Math.log2(n + 2))));
+    const horizUnits = Math.max(L - 1, 1);
+    const dagLevelPx = uw / horizUnits;
+    const estRows = Math.max(2, Math.ceil(n / Math.max(horizUnits, 1)));
+    const vertUnit = uh / Math.max(estRows, 2);
+    const linkBasePx = Math.sqrt((dagLevelPx / 2.35) * (vertUnit * 0.92));
+    return {
+      dagLevelPx: Math.max(64, Math.min(460, dagLevelPx)),
+      linkBasePx: Math.max(38, Math.min(235, linkBasePx)),
+      L,
+      uw,
+      uh,
+    };
+  }
+
+  function getUserLinkScale() {
+    return (parseInt(document.getElementById('link-distance').value, 10) || 165) / 165;
+  }
+
+  /** ระยะแนวนอนระหว่างชั้น DAG — ผูกกับ viewport ~80% + โครงสร้างกราฟ */
+  function computeDagLevelDistancePx(nodeCount, nodes, links) {
+    const nc = Math.max(1, nodeCount != null ? nodeCount : (lastNodeCount || 1));
+    const ns = Array.isArray(nodes) ? nodes : (lastVisibleGraphForLayout.nodes || []);
+    const ls = Array.isArray(links) ? links : (lastVisibleGraphForLayout.links || []);
+    const m = computeDynamicLayoutMetrics(ns, ls, nc);
+    return Math.round(m.dagLevelPx * getUserLinkScale());
+  }
+
+  function computeLinkBasePx(nodeCount, nodes, links) {
+    const nc = Math.max(1, nodeCount != null ? nodeCount : (lastNodeCount || 1));
+    const ns = Array.isArray(nodes) ? nodes : (lastVisibleGraphForLayout.nodes || []);
+    const ls = Array.isArray(links) ? links : (lastVisibleGraphForLayout.links || []);
+    const m = computeDynamicLayoutMetrics(ns, ls, nc);
+    return Math.max(34, Math.min(248, m.linkBasePx * getUserLinkScale()));
+  }
+
+  /**
+   * บังคับทิศทางเส้นให้ไหลซ้าย -> ขวา (ยกเว้นหน้าแรก)
+   * ใช้กับลิงก์ที่มองเห็นทั้งหมดในวิวปัจจุบัน
+   */
+  function buildLeftToRightFlowForce(links, minGap, strength) {
+    const ls = Array.isArray(links) ? links : [];
+    const gap = Math.max(24, minGap || 56);
+    const k = Math.max(0.05, Math.min(0.55, strength || 0.22));
+    return function (alpha) {
+      const a = Math.max(0.06, alpha || 0.18);
+      for (let i = 0; i < ls.length; i++) {
+        const l = ls[i];
+        const s = l && l.source;
+        const t = l && l.target;
+        if (!s || !t || s.x == null || t.x == null) continue;
+        const need = (s.x + gap) - t.x;
+        if (need <= 0) continue;
+        const push = need * k * a;
+        s.x -= push * 0.34;
+        t.x += push * 0.66;
+      }
+    };
+  }
+
+  function applyLeftRightLayout(g, is3d, nodeCount, nodes, links) {
+    const nc = nodeCount != null ? nodeCount : lastNodeCount;
+    const homeGrid = isHomeUzOverview(nodes, links) && !is3d;
+    if (homeGrid) {
+      if (typeof g.dagMode === 'function') {
+        g.dagMode(null);
+        if (typeof g.onDagError === 'function') g.onDagError(() => {});
+      }
+      removeHomeUzLayoutForces(g);
+      try { g.d3Force('ltrFlow', null); } catch (e) { /* ignore */ }
+      refreshHomeUzLayoutForces(g, nodes, links);
+    } else {
+      clearHomeUzLayoutPropsOnNodes(nodes);
+      removeHomeUzLayoutForces(g);
+      if (typeof g.dagMode === 'function') {
+        g.dagMode('lr');
+        if (typeof g.dagLevelDistance === 'function') g.dagLevelDistance(computeDagLevelDistancePx(nc, nodes, links));
+        if (typeof g.onDagError === 'function') g.onDagError(() => {});
+      }
+      const flowGap = Math.round(computeDagLevelDistancePx(nc, nodes, links) * 0.34);
+      try { g.d3Force('ltrFlow', buildLeftToRightFlowForce(links, flowGap, 0.24)); } catch (e) { /* ignore */ }
+    }
+    if (is3d && typeof g.numDimensions === 'function') g.numDimensions(2);
+    if (typeof g.linkDirectionalParticles === 'function') {
+      const initialView = noDirectionalParticlesView();
+      const particles = initialView ? 0 : 2;
+      g.linkDirectionalParticles(particles);
+      if (particles > 0) {
+        g.linkDirectionalParticleSpeed(0.008);
+        g.linkDirectionalParticleWidth(1.2);
+      }
+    }
+  }
+
+  /**
+   * มุมมอง drill UZ: จัดแนวนอนให้สอดคล้องกราฟ Cause→Effect→UZ ปลายทาง
+   * - UZ หลัก (ที่เลือก) อยู่ฝั่งซ้าย
+   * - UZ ปลายทางที่เกิดจาก Effect_Tag ไปเป็น Cause_Tag ใน UZ อื่น อยู่ฝั่งขวา
+   * - UZ ที่ block-link เข้าหลัก (ต้นทางจาก UZ อื่น) อยู่ซ้ายสุดกว่าหลัก
+   */
+  function applyRelatedUzLeftOfSelectedForce(g, nodeCount, nodes, links) {
+    if (!g || typeof g.d3Force !== 'function') return;
+    try {
+      g.d3Force('uzRelatedX', null);
+      g.d3Force('uzRelatedY', null);
+    } catch (e) { /* ignore */ }
+    if (typeof d3 === 'undefined' || !graphData) return;
+    if (drillState.mode !== 'uz' || !drillState.uzBlock) return;
+    const selId = 'uz_' + drillState.uzBlock;
+    const upstream = new Set();
+    const downstream = new Set();
+    const mainCauseIds = new Set();
+    const mainEffectIds = new Set();
+    const downstreamCauseIds = new Set();
+    const visUz = new Set((nodes || []).filter(n => n && n.type === 'uzblock').map(n => n.id));
+    const visIds = new Set((nodes || []).map(n => n.id));
+
+    // คอลัมน์ 2: Cause ใน UZ หลัก
+    (nodes || []).forEach(n => {
+      if (n && n.type === 'cause' && n.uzBlock === drillState.uzBlock) mainCauseIds.add(n.id);
+    });
+    // คอลัมน์ 3: Effect ที่มาจาก Cause ใน UZ หลัก
+    (graphData.links || []).forEach(l => {
+      if (!l || l.type !== 'effect') return;
+      const s = linkEndpointId(l.source);
+      const t = linkEndpointId(l.target);
+      if (mainCauseIds.has(s) && visIds.has(t)) mainEffectIds.add(t);
+    });
+    // คอลัมน์ 4: Cause ปลายทางที่ถูกเปิดด้วย Effect_Tag
+    (graphData.links || []).forEach(l => {
+      if (!l || l.type !== 'cause-link') return;
+      const s = linkEndpointId(l.source);
+      const t = linkEndpointId(l.target);
+      const cn = graphData.nodeById.get(t);
+      if (!mainEffectIds.has(s) || !cn || cn.type !== 'cause' || !visIds.has(t)) return;
+      downstreamCauseIds.add(t);
+      if (cn.uzBlock) downstream.add('uz_' + cn.uzBlock);
+    });
+    // กันพลาด: ถ้าในวิวมี cause-link ข้าม UZ อยู่แล้ว ให้ถือว่า UZ ปลายทางนั้นอยู่ฝั่งขวาเสมอ
+    (links || []).forEach(l => {
+      if (!l || l.type !== 'cause-link') return;
+      const t = linkEndpointId(l.target);
+      const cn = graphData.nodeById.get(t);
+      if (!cn || cn.type !== 'cause' || !cn.uzBlock) return;
+      if (cn.uzBlock === drillState.uzBlock) return;
+      const uzId = 'uz_' + cn.uzBlock;
+      if (visUz.has(uzId)) downstream.add(uzId);
+    });
+    (graphData.blockLinks || []).forEach(bl => {
+      const s = linkEndpointId(bl.source);
+      const t = linkEndpointId(bl.target);
+      if (t === selId && s !== selId) upstream.add(s);
+      if (s === selId && t !== selId) downstream.add(t);
+    });
+    // รองรับกรณีไม่มี block-link โดยอนุมานจาก cause-link:
+    // effect จาก UZ หลัก -> cause ใน UZ อื่น => UZ อื่นเป็นปลายทางฝั่งขวา
+    (graphData.links || []).forEach(l => {
+      if (!l || l.type !== 'cause-link') return;
+      const effId = linkEndpointId(l.source);
+      const causeId = linkEndpointId(l.target);
+      const eff = graphData.nodeById.get(effId);
+      const cn = graphData.nodeById.get(causeId);
+      if (!eff || eff.type !== 'effect' || !cn || cn.type !== 'cause' || !cn.uzBlock) return;
+      const toUzId = 'uz_' + cn.uzBlock;
+      if (toUzId === selId) return;
+      const fromMain = Array.isArray(eff.fromCauses) && eff.fromCauses.some(fc => {
+        const c = graphData.nodeById.get(fc.causeId);
+        return c && c.type === 'cause' && c.uzBlock === drillState.uzBlock;
+      });
+      if (fromMain) downstream.add(toUzId);
+    });
+    // บังคับเฉพาะโหนดที่แสดงอยู่ในหน้าปัจจุบัน
+    [...upstream].forEach(id => { if (!visUz.has(id)) upstream.delete(id); });
+    [...downstream].forEach(id => { if (!visUz.has(id)) downstream.delete(id); });
+    const d = computeDagLevelDistancePx(nodeCount, nodes, links);
+    const xUp = -d * 0.9;       // UZ ต้นทาง
+    const xMain = -d * 0.62;    // Main UZ
+    const xCause = -d * 0.14;   // Cause_Tag Number
+    const xEffect = d * 0.24;   // Effect-Tag Number
+    const xCauseTo = d * 0.62;  // Cause ปลายทาง
+    const xDown = d * 1.18;     // UZ ปลายทางจาก Effect_Tag (ดันขวาชัดเจน)
+    const fx = d3.forceX(n => {
+      if (!n) return 0;
+      if (mainCauseIds.has(n.id)) return xCause;
+      if (mainEffectIds.has(n.id) || n.type === 'effect_bundle') return xEffect;
+      if (downstreamCauseIds.has(n.id)) return xCauseTo;
+      if (upstream.has(n.id)) return xUp;
+      if (n.id === selId) return xMain;
+      if (downstream.has(n.id)) return xDown;
+      return 0;
+    }).strength(n => {
+      if (!n) return 0;
+      if (mainCauseIds.has(n.id) || mainEffectIds.has(n.id) || downstreamCauseIds.has(n.id)) return 0.22;
+      if (downstream.has(n.id)) return 0.44;
+      if (upstream.has(n.id) || n.id === selId) return 0.29;
+      return 0;
+    });
+    g.d3Force('uzRelatedX', fx);
+    // ล็อกกึ่งกลางแนวตั้งเฉพาะคอลัมน์สำคัญให้ดูเป็นชั้นเหมือนแบบตัวอย่าง
+    const fy = d3.forceY(n => {
+      if (!n) return 0;
+      if (n.id === selId || upstream.has(n.id) || downstream.has(n.id)) return 0;
+      if (mainCauseIds.has(n.id) || mainEffectIds.has(n.id) || downstreamCauseIds.has(n.id)) return 0;
+      return 0;
+    }).strength(n => {
+      if (!n) return 0;
+      if (mainCauseIds.has(n.id) || mainEffectIds.has(n.id) || downstreamCauseIds.has(n.id)) return 0.08;
+      return 0;
+    });
+    g.d3Force('uzRelatedY', fy);
+    if (typeof g.d3ReheatSimulation === 'function') g.d3ReheatSimulation();
+  }
+
+  function applyNodeSeparation(g, nodeCount, nodes, links) {
+    if (typeof g.d3Force !== 'function') return;
+    const dist = computeLinkBasePx(nodeCount, nodes, links);
+    const nc = nodeCount || 0;
+    const linkF = g.d3Force('link');
+    if (linkF && typeof linkF.distance === 'function') {
+      linkF.distance(link => {
+        const t = link.type || '';
+        if (t === 'contains') return Math.max(dist * 1.2, 92);
+        if (t === 'effect') return Math.max(dist * 2.15, 158);
+        if (t === 'cause-link') return Math.max(dist * 2.35, 172);
+        if (t === 'drill-next-uz') return Math.max(dist * 2.55, 190);
+        if (t === 'uz-effect') return Math.max(dist * 2.15, 158);
+        if (t === 'effect_bundle_in') return Math.max(dist * 1.75, 132);
+        if (t === 'effect_bundle_out') return Math.max(dist * 1.25, 88);
+        if (t === 'block-link') return Math.max(dist * 2.05, 148);
+        if (t === 'detail-link') return Math.max(dist * 1.45, 112);
+        return Math.max(dist * 1.85, 128);
+      });
+    }
+    const ch = g.d3Force('charge');
+    if (ch && typeof ch.strength === 'function') {
+      let str = -255;
+      if (nc > 450) str = -165;
+      else if (nc > 280) str = -195;
+      else if (nc > 120) str = -225;
+      else if (nc <= 15) str = -310;
+      ch.strength(str);
+    }
+    if (typeof g.d3VelocityDecay === 'function') g.d3VelocityDecay(nc > 350 ? 0.52 : 0.44);
+    const heavy = nc > 450;
+    try {
+      if (typeof d3 !== 'undefined' && typeof d3.forceCollide === 'function') {
+        if (!heavy) {
+          g.d3Force('collide', d3.forceCollide()
+            .radius(n => {
+              if (n.type === 'uzblock') return 50;
+              if (n.type === 'cause') return 138;
+              if (n.type === 'effect') return 60;
+              if (n.type === 'effect_bundle') return 22;
+              if (n.type === 'detail_desc') return 104;
+              if (n.type === 'detail_tag') return 40;
+              return 24;
+            })
+            .strength(0.92)
+            .iterations(3));
+        } else {
+          g.d3Force('collide', d3.forceCollide()
+            .radius(n => {
+              if (n.type === 'uzblock') return 38;
+              if (n.type === 'cause') return 98;
+              if (n.type === 'effect') return 44;
+              if (n.type === 'effect_bundle') return 18;
+              if (n.type === 'detail_desc') return 82;
+              if (n.type === 'detail_tag') return 32;
+              return 18;
+            })
+            .strength(0.78)
+            .iterations(2));
+        }
+      }
+    } catch (e) { console.warn('collide force:', e); }
+    if (typeof g.d3ReheatSimulation === 'function') g.d3ReheatSimulation();
+  }
+
+  let selectedNode = null;
+
+  function effectDescriptionText(eff, maxLen) {
+    if (!eff) return '—';
+    let t = '';
+    if (eff.effectDescs && eff.effectDescs.length) t = eff.effectDescs.join(' | ');
+    else t = eff.effectDesc || '';
+    t = (t || '—').replace(/\s+/g, ' ').trim();
+    if (maxLen && t.length > maxLen) return t.substring(0, maxLen - 1) + '…';
+    return t || '—';
+  }
+
+  function buildRelationTable(node) {
+    if (!node || !graphData) return '';
+    if (node.type === 'uzblock') return buildUzBlockCauseEffectTable(node);
+    if (node.type === 'cause') return buildCauseRelationTable(node);
+    if (node.type === 'effect') return buildEffectRelationTable(node);
+    return '<p>ไม่มีข้อมูล</p>';
+  }
+
+  function buildUzBlockCauseEffectTable(node) {
+    const uz = node.uzBlock || '—';
+    const uzDesc = (node.uzDesc || '—').replace(/\s+/g, ' ').trim();
+    const uzDescShort = uzDesc.length > 500 ? uzDesc.substring(0, 497) + '…' : uzDesc;
+    let html = '<table class="rel-meta"><tbody>';
+    html += '<tr><th>UZ BLOCK</th><td colspan="4">' + escapeHtml(uz) + '</td></tr>';
+    html += '<tr><th>UZ Description</th><td colspan="4">' + escapeHtml(uzDescShort) + '</td></tr>';
+    html += '</tbody></table>';
+    html += '<div class="rel-section-title">ความสัมพันธ์ Cause → Effect</div>';
+    html += '<table class="rel-ce"><thead><tr>';
+    html += '<th>Cause_Tag</th><th>Cause_Description</th><th>Effect_Tag</th><th>Effect_Description</th><th>Action</th>';
+    html += '</tr></thead><tbody>';
+    const causes = graphData.nodes.filter(n => n.uzBlock === node.uzBlock && n.type === 'cause');
+    let rowCount = 0;
+    causes.forEach(c => {
+      graphData.links.forEach(l => {
+        if (l.type !== 'effect') return;
+        if (linkEndpointId(l.source) !== c.id) return;
+        const eff = graphData.nodeById.get(linkEndpointId(l.target));
+        if (!eff || eff.type !== 'effect') return;
+        rowCount++;
+        const cDesc = (c.causeDesc || '—').replace(/\s+/g, ' ').trim();
+        const cDescS = cDesc.length > 220 ? cDesc.substring(0, 217) + '…' : cDesc;
+        html += '<tr>';
+        html += '<td>' + escapeHtml(c.causeTag || '—') + '</td>';
+        html += '<td>' + escapeHtml(cDescS) + '</td>';
+        html += '<td>' + escapeHtml(eff.effectTag || '—') + '</td>';
+        html += '<td>' + escapeHtml(effectDescriptionText(eff, 220)) + '</td>';
+        html += '<td>' + escapeHtml(String(l.effectAction || '—')) + '</td>';
+        html += '</tr>';
+      });
+    });
+    html += '</tbody></table>';
+    if (rowCount === 0) html += '<p class="rel-empty">ไม่มีลิงก์ Cause→Effect ใน UZ นี้</p>';
+    return html;
+  }
+
+  function buildCauseRelationTable(node) {
+    let html = '<table class="rel-meta"><tbody>';
+    html += '<tr><th>Cause_Tag</th><td colspan="4">' + escapeHtml(node.causeTag || '—') + '</td></tr>';
+    const cd = (node.causeDesc || '—').replace(/\s+/g, ' ').trim();
+    html += '<tr><th>Cause_Description</th><td colspan="4">' + escapeHtml(cd.length > 400 ? cd.substring(0, 397) + '…' : cd) + '</td></tr>';
+    html += '</tbody></table>';
+    html += '<div class="rel-section-title">Effect ที่เชื่อมจาก Cause นี้</div>';
+    html += '<table class="rel-ce"><thead><tr>';
+    html += '<th>Effect_Tag</th><th>Effect_Description</th><th>Action</th>';
+    html += '</tr></thead><tbody>';
+    let nEff = 0;
+    graphData.links.forEach(l => {
+      if (l.type !== 'effect' || linkEndpointId(l.source) !== node.id) return;
+      const eff = graphData.nodeById.get(linkEndpointId(l.target));
+      if (!eff || eff.type !== 'effect') return;
+      nEff++;
+      html += '<tr>';
+      html += '<td>' + escapeHtml(eff.effectTag || '—') + '</td>';
+      html += '<td>' + escapeHtml(effectDescriptionText(eff, 280)) + '</td>';
+      html += '<td>' + escapeHtml(String(l.effectAction || '—')) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    if (nEff === 0) html += '<p class="rel-empty">ไม่มี Effect เชื่อมจาก Cause นี้</p>';
+    return html;
+  }
+
+  function buildEffectRelationTable(node) {
+    let html = '<table class="rel-meta"><tbody>';
+    html += '<tr><th>Effect_Tag</th><td colspan="4">' + escapeHtml(node.effectTag || '—') + '</td></tr>';
+    html += '<tr><th>Effect_Description</th><td colspan="4">' + escapeHtml(effectDescriptionText(node, 400)) + '</td></tr>';
+    html += '</tbody></table>';
+    html += '<div class="rel-section-title">ที่มา (Cause) และการทำงาน</div>';
+    html += '<table class="rel-ce"><thead><tr>';
+    html += '<th>Cause_Tag</th><th>Cause_Description</th><th>Action</th><th>รายละเอียดจากเซลล์ E</th>';
+    html += '</tr></thead><tbody>';
+    let n = 0;
+    (node.fromCauses || []).forEach(fc => {
+      n++;
+      const cnode = graphData.nodeById.get(fc.causeId);
+      const cDesc = cnode ? (cnode.causeDesc || '—') : '—';
+      const cDescS = String(cDesc).replace(/\s+/g, ' ').trim();
+      const rowDesc = (fc.effectDesc != null && String(fc.effectDesc).trim()) ? String(fc.effectDesc).trim() : '—';
+      html += '<tr>';
+      html += '<td>' + escapeHtml(fc.causeTag || '—') + '</td>';
+      html += '<td>' + escapeHtml(cDescS.length > 180 ? cDescS.substring(0, 177) + '…' : cDescS) + '</td>';
+      html += '<td>' + escapeHtml(String(fc.action || '—')) + '</td>';
+      html += '<td>' + escapeHtml(rowDesc.length > 200 ? rowDesc.substring(0, 197) + '…' : rowDesc) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    if (n === 0) html += '<p class="rel-empty">ไม่มีข้อมูล Cause ที่เชื่อมเข้า Effect นี้</p>';
+
+    const cross = [];
+    graphData.links.forEach(l => {
+      if (l.type !== 'cause-link' || linkEndpointId(l.source) !== node.id) return;
+      const tgt = graphData.nodeById.get(linkEndpointId(l.target));
+      if (tgt && tgt.type === 'cause') {
+        cross.push(tgt);
+      }
+    });
+    if (cross.length) {
+      html += '<div class="rel-section-title">เชื่อมต่อเป็น Cause ถัดไป (cross)</div>';
+      html += '<table class="rel-ce"><thead><tr><th>Cause_Tag</th><th>Cause_Description</th><th>UZ BLOCK</th></tr></thead><tbody>';
+      cross.forEach(t => {
+        html += '<tr>';
+        html += '<td>' + escapeHtml(t.causeTag || '—') + '</td>';
+        html += '<td>' + escapeHtml(String(t.causeDesc || '—').replace(/\s+/g, ' ').substring(0, 200)) + '</td>';
+        html += '<td>' + escapeHtml(t.uzBlock || '—') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+    return html;
+  }
+
+  function showRelationPanel(node) {
+    const panel = document.getElementById('relation-panel');
+    const wrap = document.getElementById('relation-table-wrap');
+    // keep minimize state during node change
+    applyRelationMinimizedState();
+    if (!node) {
+      panel.classList.remove('show');
+      return;
+    }
+    selectedNode = node;
+    wrap.innerHTML = '<h4>' + escapeHtml(node.name || node.id) + '</h4>' + buildRelationTable(node);
+    panel.classList.add('show');
+    applyRelationMinimizedState();
+  }
+
+  let relationMinimized = false;
+  function applyRelationMinimizedState() {
+    const panel = document.getElementById('relation-panel');
+    const btn = document.getElementById('btn-minimize-rel');
+    if (!panel || !btn) return;
+    if (relationMinimized) {
+      panel.classList.add('minimized');
+      btn.textContent = '+';
+      btn.title = 'ขยายตาราง';
+    } else {
+      panel.classList.remove('minimized');
+      btn.textContent = '−';
+      btn.title = 'ย่อตาราง';
+    }
+  }
+
+  (function initRelationMinimize() {
+    const btn = document.getElementById('btn-minimize-rel');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      relationMinimized = !relationMinimized;
+      applyRelationMinimizedState();
+    });
+  })();
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function bumpZoomToFit() {
+    const gi = graphInstance;
+    if (!gi || typeof gi.zoomToFit !== 'function') return;
+    const dur = 520;
+    const el = document.getElementById('graph-container');
+    const m = Math.min((el && el.clientWidth) || 800, (el && el.clientHeight) || 600);
+    const pad = Math.max(24, Math.min(96, Math.round(m * (1 - VIEWPORT_LAYOUT_FRACTION) / 2)));
+    setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 40);
+    setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 320);
+    setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 780);
+  }
+
+  function snapshotViewState() {
+    return {
+      drillState: JSON.parse(JSON.stringify(drillState)),
+      isolatedIds: isolatedSet && isolatedSet.size ? Array.from(isolatedSet) : null,
+    };
+  }
+
+  function pushNavHistory() {
+    if (!graphData) return;
+    viewHistory.push(snapshotViewState());
+    if (viewHistory.length > 100) viewHistory.shift();
+    updateBackButton();
+  }
+
+  function clearNavHistory() {
+    viewHistory.length = 0;
+    updateBackButton();
+  }
+
+  function updateBackButton() {
+    const b = document.getElementById('btn-back');
+    if (b) b.disabled = !graphData || viewHistory.length === 0;
+  }
+
+  function goBackView() {
+    if (!graphData || viewHistory.length === 0) return;
+    const snap = viewHistory.pop();
+    drillState = snap.drillState && typeof snap.drillState === 'object'
+      ? JSON.parse(JSON.stringify(snap.drillState))
+      : { mode: 'home' };
+    isolatedSet = (snap.isolatedIds && snap.isolatedIds.length)
+      ? new Set(snap.isolatedIds)
+      : null;
+    showRelationPanel(null);
+    initGraph();
+    updateBackButton();
+  }
+
+  const searchInput = document.getElementById('search-global');
+  const searchSuggestEl = document.getElementById('search-suggestions');
+  const searchAutocompleteWrap = document.getElementById('search-autocomplete-wrap');
+  let searchSuggestDebounce = null;
+  let searchSuggestActive = -1;
+  let searchSuggestItems = [];
+  const SEARCH_SUGGEST_LIMIT = 45;
+
+  function hideSearchSuggestions() {
+    searchSuggestActive = -1;
+    searchSuggestItems = [];
+    if (searchSuggestEl) {
+      searchSuggestEl.hidden = true;
+      searchSuggestEl.innerHTML = '';
+    }
+  }
+
+  function searchSuggestionKindClass(kind) {
+    if (kind === 'uzblock') return 'sk-uzblock';
+    if (kind === 'cause') return 'sk-cause';
+    if (kind === 'effect') return 'sk-effect';
+    return 'sk-uzblock';
+  }
+
+  function searchSuggestionKindShort(kind) {
+    if (kind === 'uzblock') return 'UZ';
+    if (kind === 'cause') return 'Cause';
+    if (kind === 'effect') return 'Effect';
+    return '?';
+  }
+
+  function updateSearchSuggestionsHighlight() {
+    if (!searchSuggestEl) return;
+    searchSuggestEl.querySelectorAll('.search-suggestion-item').forEach((el, i) => {
+      el.classList.toggle('active', i === searchSuggestActive);
+    });
+  }
+
+  function renderSearchSuggestions(items, showEmptyHint) {
+    searchSuggestItems = items;
+    if (!searchSuggestEl) return;
+    if (!items.length) {
+      searchSuggestActive = -1;
+      if (showEmptyHint) {
+        searchSuggestEl.innerHTML = '<div class="search-suggestion-empty" role="presentation">ไม่พบรายการที่ตรงกัน — ลองคำอื่น หรือกด &quot;ค้นหา&quot; เพื่อรวมทุกผลที่ตรง</div>';
+        searchSuggestEl.hidden = false;
+      } else {
+        searchSuggestEl.hidden = true;
+        searchSuggestEl.innerHTML = '';
+      }
+      return;
+    }
+    searchSuggestActive = 0;
+    const hint = (items.length >= SEARCH_SUGGEST_LIMIT)
+      ? '<div class="search-suggestion-hint" role="note">แสดงสูงสุด ' + SEARCH_SUGGEST_LIMIT + ' รายการ — กด &quot;ค้นหา&quot; เพื่อรวมทุกโหนดที่มีข้อความตรงกัน</div>'
+      : '';
+    searchSuggestEl.innerHTML = items.map((it, i) =>
+      '<button type="button" class="search-suggestion-item' + (i === 0 ? ' active' : '') + '" data-index="' + i + '" role="option">' +
+      '<span class="sk ' + searchSuggestionKindClass(it.kind) + '">' + escapeHtml(searchSuggestionKindShort(it.kind)) + '</span>' +
+      '<span class="sl">' + escapeHtml(it.label) + '</span>' +
+      '</button>'
+    ).join('') + hint;
+    searchSuggestEl.hidden = false;
+    searchSuggestEl.querySelectorAll('.search-suggestion-item').forEach(btn => {
+      btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      btn.addEventListener('click', function () {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        if (!isNaN(idx) && searchSuggestItems[idx]) selectSearchSuggestion(searchSuggestItems[idx]);
+      });
+    });
+  }
+
+  function getSearchMatchEntries(q) {
+    if (!graphData || !graphData.searchIndex || !graphData.searchIndex.length) return [];
+    const qq = String(q || '').trim().toLowerCase();
+    if (!qq) return [];
+    const out = [];
+    for (let i = 0; i < graphData.searchIndex.length; i++) {
+      const e = graphData.searchIndex[i];
+      if (!e || !e.text || e.text.indexOf(qq) === -1) continue;
+      out.push({ id: e.id, kind: e.kind, label: e.label });
+    }
+    return out;
+  }
+
+  function refreshSearchSuggestions() {
+    const q = (searchInput && searchInput.value || '').trim().toLowerCase();
+    if (!graphData || !graphData.searchIndex) {
+      hideSearchSuggestions();
+      return;
+    }
+    if (!q) {
+      hideSearchSuggestions();
+      return;
+    }
+    const all = getSearchMatchEntries(q);
+    const out = all.slice(0, SEARCH_SUGGEST_LIMIT);
+    renderSearchSuggestions(out, true);
+  }
+
+  function applySearchFromMatchEntries(matchEntries) {
+    if (!graphData || !matchEntries || !matchEntries.length) return false;
+    pushNavHistory();
+    const matched = new Set();
+    matchEntries.forEach(x => {
+      const n = graphData.nodeById.get(x.id);
+      if (n) matched.add(x.id);
+    });
+    addUzBlockNodesForCausesInSet(graphData, matched);
+    isolatedSet = matched;
+    drillState = { mode: 'search' };
+    hideSearchSuggestions();
+    initGraph();
+    return true;
+  }
+
+  function selectSearchSuggestion(item) {
+    if (!item || !item.id) return;
+    if (!applySearchFromMatchEntries([item])) return;
+    if (searchInput) searchInput.value = item.label || '';
+  }
+
+  function handleGraphNodeClick(node, ev) {
+    if (!graphData || !node) return;
+    if (node.type === 'effect_bundle') return;
+
+    const shiftDetail = ev && ev.shiftKey && node.type === 'effect';
+    if (shiftDetail && drillState.mode !== 'effect_detail') {
+      pushNavHistory();
+      drillState = { mode: 'effect_detail', effectId: node.id };
+      isolatedSet = null;
+      showRelationPanel(node);
+      initGraph();
+      return;
+    }
+
+    if (drillState.mode === 'effect_detail') {
+      if (node.type === 'detail_tag' || node.type === 'detail_desc') {
+        const eff = graphData.nodeById.get(drillState.effectId);
+        if (eff) showRelationPanel(eff);
+      }
+      return;
+    }
+
+    if (drillState.mode === 'effect_bridge') {
+      if (node.type === 'effect') {
+        pushNavHistory();
+        drillState = { mode: 'effect_drill_up', effectId: node.id };
+        isolatedSet = getEffectDrillUpSet(graphData, node.id);
+        showRelationPanel(node);
+        initGraph();
+      }
+      return;
+    }
+
+    if (drillState.mode === 'effect_next_uz') {
+      if (node.type === 'effect' && drillState.effectId && node.id === drillState.effectId) {
+        pushNavHistory();
+        drillState = { mode: 'effect_drill_up', effectId: node.id };
+        isolatedSet = getEffectDrillUpSet(graphData, node.id);
+        showRelationPanel(node);
+        initGraph();
+        return;
+      }
+      if (node.type !== 'uzblock') return;
+    }
+
+    if (drillState.mode === 'search') {
+      pushNavHistory();
+      if (node.type === 'effect') {
+        isolatedSet = getEffectDrillUpSet(graphData, node.id);
+      } else if (node.type === 'cause') {
+        isolatedSet = getOneStepNextSet(graphData, node.id);
+      } else if (node.type === 'uzblock' && node.uzBlock) {
+        drillState = { mode: 'uz', uzBlock: node.uzBlock, uzShowCauses: false };
+        isolatedSet = getUzDrilldownSetEffectsOnly(graphData, node.uzBlock);
+      } else {
+        isolatedSet = getConnectedComponent(graphData, node.id);
+      }
+      showRelationPanel(node);
+      initGraph();
+      return;
+    }
+
+    if (drillState.mode === 'uz' && node.type === 'uzblock' && node.uzBlock
+        && drillState.uzBlock === node.uzBlock && drillState.uzShowCauses === false) {
+      pushNavHistory();
+      drillState = { mode: 'uz', uzBlock: node.uzBlock, uzShowCauses: true };
+      isolatedSet = getUzDrilldownSet(graphData, node.uzBlock);
+      showRelationPanel(node);
+      initGraph();
+      return;
+    }
+
+    if (node.type === 'uzblock') {
+      pushNavHistory();
+      drillState = { mode: 'uz', uzBlock: node.uzBlock, uzShowCauses: false };
+      isolatedSet = getUzDrilldownSetEffectsOnly(graphData, node.uzBlock);
+      showRelationPanel(node);
+      initGraph();
+      return;
+    }
+
+    if (node.type === 'cause') {
+      pushNavHistory();
+      isolatedSet = getOneStepNextSet(graphData, node.id);
+      showRelationPanel(node);
+      initGraph();
+      return;
+    }
+
+    if (node.type === 'effect') {
+      pushNavHistory();
+      // Effect_Tag = Cause_Tag ในแถวอื่น → แสดงโหนด Effect + UZ BLOCK ถัดไป แล้วคลิก UZ เพื่อดู Effect ต่อ (drill ซ้ำได้จนไม่มี Cause รับ tag นี้)
+      const nextUz = getUzBlocksWhereEffectTagIsCause(graphData, node.id);
+      if (nextUz.length > 0) {
+        drillState = { mode: 'effect_next_uz', effectId: node.id };
+        isolatedSet = new Set([node.id]);
+        nextUz.forEach(ub => isolatedSet.add('uz_' + ub));
+      } else if (effectHasOutgoingCauseLinks(graphData, node.id)) {
+        drillState = { mode: 'effect_bridge', bridgeEffectId: node.id };
+        isolatedSet = getEffectBridgeDrillSet(graphData, node.id);
+      } else {
+        drillState = { mode: 'effect_drill_up', effectId: node.id };
+        isolatedSet = getEffectDrillUpSet(graphData, node.id);
+      }
+      showRelationPanel(node);
+      initGraph();
+      return;
+    }
+  }
+
+  function initGraph() {
+    actionLinkFocus = null;
+    homeUzAmbientActive = false;
+    container = document.getElementById('graph-container');
+    if (graphInstance) {
+      try {
+        if (graphInstance.scene) graphInstance.scene().remove?.();
+      } catch (e) {}
+      graphInstance = null;
+    }
+    container.innerHTML = '';
+    const data = getVisibleGraph();
+    const initialView = noDirectionalParticlesView();
+    lastNodeCount = data.nodes.length;
+    lastVisibleGraphForLayout = { nodes: data.nodes, links: data.links || [] };
+    function isHZNode(n) { return n.type === 'cause' && n.causeTag && n.causeTag.toUpperCase().includes('HZ'); }
+
+    if (mode3d && typeof ForceGraph3D !== 'undefined') {
+      const g = ForceGraph3D()(container)
+        .backgroundColor('#000000')
+        .graphData(data)
+        .nodeLabel(nodeLabel)
+        .nodeColor(nodeColor)
+        .nodeVal(n => n.type === 'uzblock' ? 8 : n.type === 'cause' ? 4 : 3)
+        .nodeThreeObject(n => {
+          if (!isHZNode(n)) return null;
+          if (typeof THREE === 'undefined') return null;
+          const size = n.type === 'cause' ? 4 : 3;
+          const hex = new THREE.Mesh(
+            new THREE.CylinderGeometry(1, 1, 0.5, 6),
+            new THREE.MeshLambertMaterial({ color: nodeColor(n) })
+          );
+          hex.scale.setScalar(size);
+          return hex;
+        })
+        .linkDirectionalArrowLength(3)
+        .linkDirectionalArrowRelPos(0.5)
+        .linkWidth(1)
+        .linkColor(linkColorDimAware)
+        .onLinkClick((link, ev) => {
+          try { if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e) {}
+          setActionLinkFocusFromClick(link);
+        })
+        .onNodeClick((node, ev) => {
+          handleGraphNodeClick(node, ev);
+          if (graphInstance && graphInstance.zoomToFit) graphInstance.zoomToFit(400);
+        })
+        .onNodeHover((node, prev, ev) => {
+          showTooltip(ev, node);
+          container.style.cursor = node ? 'pointer' : 'default';
+        })
+        .onBackgroundClick(() => {
+          clearActionLinkFocus();
+          showRelationPanel(null);
+        });
+      applyLeftRightLayout(g, true, data.nodes.length, data.nodes, data.links);
+      applyNodeSeparation(g, data.nodes.length, data.nodes, data.links);
+      graphInstance = g;
+    } else if (!mode3d && typeof ForceGraph !== 'undefined') {
+      const g = ForceGraph()(container)
+        .backgroundColor('#000000')
+        .graphData(data)
+        .nodeLabel('')
+        .nodeColor(nodeColor)
+        .nodeVal(n => n.type === 'uzblock' ? 8 : n.type === 'cause' ? 4 : n.type === 'detail_desc' ? 5 : n.type === 'effect_bundle' ? 2.2 : 3)
+        .nodeCanvasObject((node, ctx, globalScale) => {
+          const scale = globalScale || 1;
+          const color = nodeColor(node);
+
+          const roundRect = (x, y, w, h, r) => {
+            const rr = Math.max(0, Math.min(r, Math.min(w, h) / 2));
+            ctx.beginPath();
+            ctx.moveTo(x + rr, y);
+            ctx.arcTo(x + w, y, x + w, y + h, rr);
+            ctx.arcTo(x + w, y + h, x, y + h, rr);
+            ctx.arcTo(x, y + h, x, y, rr);
+            ctx.arcTo(x, y, x + w, y, rr);
+            ctx.closePath();
+          };
+
+          const fillBase = 'rgba(22,22,32,0.85)';
+          const strokeBase = 'rgba(210,210,220,0.55)';
+          ctx.save();
+
+          if (node.type === 'cause') {
+            const boxW = 310 / scale;
+            const boxH = 78 / scale;
+            const x = node.x - boxW / 2;
+            const y = node.y - boxH / 2;
+            const r = 14 / scale;
+
+            roundRect(x, y, boxW, boxH, r);
+            ctx.fillStyle = fillBase;
+            ctx.fill();
+            ctx.lineWidth = 2 / scale;
+            ctx.strokeStyle = color || strokeBase;
+            ctx.stroke();
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            ctx.fillStyle = 'rgba(255,255,255,0.96)';
+            ctx.font = (14 / scale) + 'px "Segoe UI", sans-serif';
+            const title = node.causeTag || '-';
+            ctx.fillText(title, node.x, y + 10 / scale);
+
+            ctx.fillStyle = 'rgba(220,220,235,0.92)';
+            ctx.font = (12 / scale) + 'px "Segoe UI", sans-serif';
+            const descRaw = (node.causeDesc || '').replace(/\s+/g, ' ').trim();
+            const descShort = descRaw.length > 70 ? (descRaw.slice(0, 67) + '...') : descRaw;
+            const descY = y + 30 / scale;
+            const descMaxW = boxW - 18 / scale;
+            ctx.fillText(descShort, node.x, descY, descMaxW);
+          } else if (node.type === 'detail_tag') {
+            const boxW = 160 / scale;
+            const boxH = 36 / scale;
+            const x = node.x - boxW / 2;
+            const y = node.y - boxH / 2;
+            const r = 10 / scale;
+            roundRect(x, y, boxW, boxH, r);
+            ctx.fillStyle = fillBase;
+            ctx.fill();
+            ctx.lineWidth = 1.8 / scale;
+            ctx.strokeStyle = color || strokeBase;
+            ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgba(255,255,255,0.96)';
+            ctx.font = (13 / scale) + 'px "Segoe UI", sans-serif';
+            ctx.fillText(node.effectTag || node.name || '—', node.x, node.y);
+          } else if (node.type === 'detail_desc') {
+            const boxW = 340 / scale;
+            const boxH = 88 / scale;
+            const x = node.x - boxW / 2;
+            const y = node.y - boxH / 2;
+            const r = 12 / scale;
+            roundRect(x, y, boxW, boxH, r);
+            ctx.fillStyle = fillBase;
+            ctx.fill();
+            ctx.lineWidth = 2 / scale;
+            ctx.strokeStyle = color || strokeBase;
+            ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            ctx.font = (13 / scale) + 'px "Segoe UI", sans-serif';
+            const raw = (node.detailText || node.name || '—').replace(/\s+/g, ' ').trim();
+            const short = raw.length > 120 ? raw.slice(0, 117) + '...' : raw;
+            ctx.fillText(short, node.x, y + 14 / scale, boxW - 16 / scale);
+          } else if (node.type === 'effect_bundle') {
+            const rad = 16 / scale;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, rad, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(40,48,64,0.94)';
+            ctx.fill();
+            ctx.lineWidth = 2 / scale;
+            ctx.strokeStyle = 'rgba(186,198,220,0.9)';
+            ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgba(248,250,252,0.95)';
+            ctx.font = (9 / scale) + 'px "Segoe UI", sans-serif';
+            const lab = String(node.bundleActionKey || '').slice(0, 7);
+            ctx.fillText(lab, node.x, node.y);
+          } else if (node.type === 'uzblock') {
+            const tag = node.uzBlock || '-';
+            const boxW = 140 / scale;
+            const boxH = 32 / scale;
+            const x = node.x - boxW / 2;
+            const y = node.y - boxH / 2;
+            const r = 10 / scale;
+
+            roundRect(x, y, boxW, boxH, r);
+            const homeStroke = isHomePageView() && node._homeLayoutX != null;
+            const dimUz = actionLinkFocus && actionLinkFocus.nodeIds && !actionLinkFocus.nodeIds.has(node.id);
+            ctx.fillStyle = (homeStroke && dimUz) ? 'rgba(46,46,54,0.88)' : fillBase;
+            ctx.fill();
+            if (homeStroke) {
+              const st = dimUz ? { stroke: 'rgba(88,88,100,0.32)', lw: 1.35 } : { stroke: 'rgba(30, 64, 175, 0.94)', lw: 1.85 };
+              ctx.lineWidth = st.lw / scale;
+              ctx.strokeStyle = st.stroke;
+            } else {
+              ctx.lineWidth = 1.6 / scale;
+              ctx.strokeStyle = color || strokeBase;
+            }
+            ctx.stroke();
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = (homeStroke && dimUz) ? 'rgba(168,168,182,0.55)' : 'rgba(255,255,255,0.95)';
+            ctx.font = (12 / scale) + 'px "Segoe UI", sans-serif';
+            ctx.fillText(tag, node.x, node.y);
+
+            // Drilldown view: show UZ BLOCK_Description below UZ node.
+            if (!isHomePageView() && node.uzDesc) {
+              const descRaw = String(node.uzDesc).replace(/\s+/g, ' ').trim();
+              const descShort = descRaw.length > 72 ? (descRaw.slice(0, 69) + '...') : descRaw;
+              const descY = y + boxH + 6 / scale;
+              ctx.textBaseline = 'top';
+              ctx.fillStyle = 'rgba(205,215,240,0.92)';
+              ctx.font = (10.5 / scale) + 'px "Segoe UI", sans-serif';
+              ctx.fillText(descShort, node.x, descY, 220 / scale);
+            }
+          } else {
+            // Small tags for Effect / others
+            const tag = (node.type === 'effect') ? (node.effectTag || '-') : (node.name || node.id);
+            const isEffect = node.type === 'effect';
+            const actionFocusOut = actionLinkFocus && actionLinkFocus.nodeIds && !actionLinkFocus.nodeIds.has(node.id);
+            const showHsResetBox = isEffect && effectHasHsResetFromCause(node) && !actionFocusOut;
+            const bridgeCrossUz = isEffect && !actionFocusOut && graphData && effectTagIsCauseInOtherUzBlock(graphData, node);
+
+            const boxW = 140 / scale;
+            const boxH = 32 / scale;
+            const x = node.x - boxW / 2;
+            const y = node.y - boxH / 2;
+            const r = 10 / scale;
+
+            roundRect(x, y, boxW, boxH, r);
+            ctx.fillStyle = (isEffect && actionFocusOut) ? 'rgba(46,46,54,0.88)' : fillBase;
+            ctx.fill();
+            ctx.lineWidth = bridgeCrossUz ? (2.75 / scale) : (1.6 / scale);
+            ctx.strokeStyle = bridgeCrossUz ? '#ef4444' : (color || strokeBase);
+            ctx.stroke();
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = (isEffect && actionFocusOut) ? 'rgba(168,168,182,0.55)' : 'rgba(255,255,255,0.95)';
+            ctx.font = (12 / scale) + 'px "Segoe UI", sans-serif';
+            ctx.fillText(tag, node.x, node.y);
+
+            // HS + Reset_* ใน E1..E21: ปุ่ม Hand switch Reset วาล์ว → Reset box ข้าง Effect (ไม่มีเส้น HS→Effect สำหรับ Reset)
+            if (showHsResetBox) {
+              const bW = 56 / scale;
+              const bH = 22 / scale;
+              const bx = x + boxW + 8 / scale;
+              const by = y - 8 / scale;
+              roundRect(bx, by, bW, bH, 7 / scale);
+              ctx.fillStyle = 'rgba(217,249,157,0.22)';
+              ctx.fill();
+              ctx.lineWidth = 1.3 / scale;
+              ctx.strokeStyle = '#d9f99d';
+              ctx.stroke();
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillStyle = '#d9f99d';
+              ctx.font = (11 / scale) + 'px "Segoe UI", sans-serif';
+              ctx.fillText('Reset', bx + bW / 2, by + bH / 2);
+            }
+          }
+
+          ctx.restore();
+        })
+        .linkDirectionalArrowLength(4)
+        .linkDirectionalArrowRelPos(0.56)
+        .linkWidth(linkWidthForGraph)
+        .linkCurvature(link => {
+          if (link.type === 'detail-link') return 0;
+          if (link.type === 'effect_bundle_out') return 0;
+          if (link.type === 'effect_bundle_in') return 0.06;
+          const sa = typeof link.source === 'object' ? link.source.id : link.source;
+          const ta = typeof link.target === 'object' ? link.target.id : link.target;
+          const key = String(sa) + '\0' + String(ta) + '\0' + String(link.type || '');
+          let h = 2166136261;
+          for (let i = 0; i < key.length; i++) {
+            h ^= key.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+          }
+          const u = (Math.abs(h) % 10001) / 10000;
+          return (u - 0.5) * 0.38;
+        })
+        .linkColor(linkColorDimAware)
+        .onLinkClick((link, ev) => {
+          try { if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e) {}
+          setActionLinkFocusFromClick(link);
+        })
+        .onBackgroundClick(() => {
+          clearActionLinkFocus();
+          showRelationPanel(null);
+        })
+        .onNodeClick((node, ev) => {
+          handleGraphNodeClick(node, ev);
+        })
+        .onNodeHover((node, prev, ev) => {
+          showTooltip(ev, node);
+          container.style.cursor = node ? 'pointer' : 'default';
+        });
+      // freeze simulation เพื่อกันความหน่วง โดยยังให้ interactions ทำงานต่อได้
+      if (typeof g.cooldownTicks === 'function') {
+        let ticks = initialView ? 280 : Math.min(420 + Math.floor((data.nodes.length || 0) * 0.85), 820);
+        if (isHomeUzOverview(data.nodes, data.links)) {
+          ticks = Math.min(200, Math.max(96, 72 + Math.floor((data.nodes.length || 0) * 5)));
+        }
+        g.cooldownTicks(ticks);
+      }
+      applyLeftRightLayout(g, false, data.nodes.length, data.nodes, data.links);
+      applyNodeSeparation(g, data.nodes.length, data.nodes, data.links);
+      applyRelatedUzLeftOfSelectedForce(g, data.nodes.length, data.nodes, data.links);
+      if (isHomeUzOverview(data.nodes, data.links)) {
+        if (typeof g.autoPauseRedraw === 'function') g.autoPauseRedraw(false);
+        if (typeof g.onEngineStop === 'function') {
+          g.onEngineStop(() => {
+            if (graphInstance === g && isHomePageView()) homeUzAmbientActive = true;
+          });
+        }
+        if (typeof g.onRenderFramePre === 'function') {
+          g.onRenderFramePre(() => {
+            if (homeUzAmbientActive && graphInstance === g) applyHomeUzAmbientDrawOffset();
+          });
+        }
+      }
+      graphInstance = g;
+    } else {
+      const ForceGraph = typeof ForceGraph3D !== 'undefined' ? ForceGraph3D : (typeof ForceGraph !== 'undefined' ? ForceGraph : null);
+      if (ForceGraph) {
+        const g = ForceGraph()(container)
+          .backgroundColor('#000000')
+          .graphData(data)
+          .nodeLabel(nodeLabel)
+          .nodeColor(nodeColor)
+          .nodeVal(n => n.type === 'uzblock' ? 8 : 4)
+          .linkDirectionalArrowLength(3)
+          .linkWidth(1)
+          .linkColor(linkColorDimAware)
+          .onLinkClick((link, ev) => {
+            try { if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e) {}
+            setActionLinkFocusFromClick(link);
+          })
+          .onBackgroundClick(() => {
+            clearActionLinkFocus();
+            showRelationPanel(null);
+          })
+          .onNodeClick((node, ev) => {
+            handleGraphNodeClick(node, ev);
+            if (graphInstance && graphInstance.zoomToFit) graphInstance.zoomToFit(400);
+          })
+          .onNodeHover((node, prev, ev) => {
+            showTooltip(ev, node);
+            container.style.cursor = node ? 'pointer' : 'default';
+          });
+        applyLeftRightLayout(g, true, data.nodes.length, data.nodes, data.links);
+        applyNodeSeparation(g, data.nodes.length, data.nodes, data.links);
+        applyRelatedUzLeftOfSelectedForce(g, data.nodes.length, data.nodes, data.links);
+        graphInstance = g;
+      }
+    }
+    if (!linkDistanceListenerAttached) {
+      linkDistanceListenerAttached = true;
+      const distEl = document.getElementById('link-distance');
+      if (distEl) distEl.addEventListener('change', function () {
+        const gd = graphInstance && typeof graphInstance.graphData === 'function' ? graphInstance.graphData() : null;
+        const ns = (gd && gd.nodes) || lastVisibleGraphForLayout.nodes;
+        const ls = (gd && gd.links) || lastVisibleGraphForLayout.links;
+        const nc = (ns && ns.length) || lastNodeCount || 1;
+        if (isHomeUzOverview(ns, ls)) {
+          if (graphInstance) refreshHomeUzLayoutForces(graphInstance, ns, ls);
+        } else if (graphInstance && typeof graphInstance.dagLevelDistance === 'function') {
+          graphInstance.dagLevelDistance(computeDagLevelDistancePx(nc, ns, ls));
+        }
+        if (graphInstance) applyNodeSeparation(graphInstance, nc, ns, ls);
+        if (graphInstance) applyRelatedUzLeftOfSelectedForce(graphInstance, nc, ns, ls);
+      });
+    }
+    if (!layoutResizeListenerAttached) {
+      layoutResizeListenerAttached = true;
+      window.addEventListener('resize', function () {
+        clearTimeout(layoutResizeTimer);
+        layoutResizeTimer = setTimeout(function () {
+          if (!graphInstance || typeof graphInstance.graphData !== 'function') return;
+          const gd = graphInstance.graphData();
+          const ns = (gd && gd.nodes) || [];
+          const ls = (gd && gd.links) || [];
+          const nc = ns.length || lastNodeCount || 1;
+          if (isHomeUzOverview(ns, ls)) {
+            refreshHomeUzLayoutForces(graphInstance, ns, ls);
+          } else if (typeof graphInstance.dagLevelDistance === 'function') {
+            graphInstance.dagLevelDistance(computeDagLevelDistancePx(nc, ns, ls));
+          }
+          applyNodeSeparation(graphInstance, nc, ns, ls);
+          applyRelatedUzLeftOfSelectedForce(graphInstance, nc, ns, ls);
+          bumpZoomToFit();
+        }, 180);
+      });
+    }
+    if (graphInstance) {
+      graphInstance.nodeColor(nodeColor);
+      graphInstance.nodeLabel('');
+      if (typeof graphInstance.linkColor === 'function') graphInstance.linkColor(linkColorDimAware);
+    }
+    bumpZoomToFit();
+    syncUzBlockDropdown();
+  }
+
+  function runWithFile(file) {
+    const isExcel = /\.xlsx?$/i.test(file.name);
+    const load = isExcel ? parseExcelFile(file) : parseCSVFile(file);
+    load.then(rows => {
+      graphData = buildGraphFromRows(rows);
+      isolatedSet = null;
+      drillState = { mode: 'home' };
+      clearNavHistory();
+      hideSearchSuggestions();
+      populateUzBlockDropdown();
+      initGraph();
+    }).catch(err => {
+      alert('ไม่สามารถโหลดไฟล์ได้: ' + err.message);
+    });
+  }
+
+  document.getElementById('file-input').addEventListener('change', function () {
+    const f = this.files[0];
+    if (f) runWithFile(f);
+  });
+
+  document.getElementById('uz-block-select').addEventListener('change', function () {
+    const v = this.value;
+    if (!graphData || !v) return;
+    pushNavHistory();
+    drillState = { mode: 'uz', uzBlock: v, uzShowCauses: false };
+    isolatedSet = getUzDrilldownSetEffectsOnly(graphData, v);
+    const uzNode = graphData.nodeById.get('uz_' + v);
+    showRelationPanel(uzNode || null);
+    initGraph();
+  });
+
+  document.getElementById('btn-search').addEventListener('click', function () {
+    const q = (searchInput && searchInput.value || '').trim().toLowerCase();
+    if (!q || !graphData) return;
+    const matched = getSearchMatchEntries(q);
+    if (matched.length) {
+      applySearchFromMatchEntries(matched);
+    } else {
+      alert('ไม่พบ: ' + q);
+      hideSearchSuggestions();
+    }
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchSuggestDebounce);
+      searchSuggestDebounce = setTimeout(refreshSearchSuggestions, 160);
+    });
+    searchInput.addEventListener('focus', function () {
+      if ((searchInput.value || '').trim()) refreshSearchSuggestions();
+    });
+    searchInput.addEventListener('keydown', function (e) {
+      const panelOpen = searchSuggestEl && !searchSuggestEl.hidden;
+      const n = searchSuggestItems.length;
+      if (e.key === 'Escape') {
+        if (panelOpen) {
+          e.preventDefault();
+          hideSearchSuggestions();
+        }
+        return;
+      }
+      if (panelOpen && n && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        if (e.key === 'ArrowDown') {
+          searchSuggestActive = (searchSuggestActive + 1) % n;
+        } else {
+          searchSuggestActive = (searchSuggestActive <= 0 ? n - 1 : searchSuggestActive - 1);
+        }
+        updateSearchSuggestionsHighlight();
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (panelOpen && n && searchSuggestActive >= 0 && searchSuggestItems[searchSuggestActive]) {
+          selectSearchSuggestion(searchSuggestItems[searchSuggestActive]);
+        } else {
+          document.getElementById('btn-search').click();
+        }
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!searchAutocompleteWrap || !e.target) return;
+    if (!searchAutocompleteWrap.contains(e.target)) hideSearchSuggestions();
+  });
+
+  document.getElementById('btn-home').addEventListener('click', function () {
+    isolatedSet = null;
+    drillState = { mode: 'home' };
+    clearNavHistory();
+    showRelationPanel(null);
+    if (graphData) initGraph();
+  });
+
+  document.getElementById('btn-back').addEventListener('click', function () {
+    goBackView();
+  });
+
+  document.getElementById('btn-reset-view').addEventListener('click', function () {
+    isolatedSet = null;
+    drillState = { mode: 'home' };
+    clearNavHistory();
+    showRelationPanel(null);
+    if (graphData) initGraph();
+  });
+
+  document.getElementById('btn-reset-isolate').addEventListener('click', function () {
+    isolatedSet = null;
+    drillState = { mode: 'home' };
+    clearNavHistory();
+    if (graphData) initGraph();
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    lastPointer.x = e.pageX;
+    lastPointer.y = e.pageY;
+  });
+
+  console.log('CED Cause & Effect Graph ready. Upload CSV or Excel.');
+})();
+  </script>
+</body>
+</html>
