@@ -21,11 +21,14 @@
     }
     .toolbar label { margin-right: 4px; }
     .toolbar input[type="file"] { display: none; }
-    .toolbar button, .toolbar .btn {
+    .toolbar button, .toolbar .btn, .toolbar a.btn-link {
       padding: 8px 14px; border-radius: 6px; border: 1px solid #3a3a4a;
       background: #252532; color: #e0e0e0; cursor: pointer; font-size: 13px;
     }
-    .toolbar button:hover, .toolbar .btn:hover { background: #32324a; }
+    .toolbar a.btn-link {
+      display: inline-block; text-decoration: none; line-height: normal;
+    }
+    .toolbar button:hover, .toolbar .btn:hover, .toolbar a.btn-link:hover { background: #32324a; }
     .toolbar button:disabled { opacity: 0.45; cursor: not-allowed; }
     .toolbar .search-wrap { display: flex; gap: 6px; align-items: center; }
     .toolbar input[type="text"] {
@@ -127,6 +130,7 @@
   <div class="toolbar">
     <label class="btn" for="file-input">📂 เลือก CSV/Excel</label>
     <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
+    <a class="btn btn-link" role="button" href="https://thaioilgroup0.sharepoint.com/:x:/s/CFPOperations/IQAg_GiUohHeR5oU4lzE9Lk7Ae5OVwTtzaPH9_TwZyOSvM8?e=wt6Qxn" target="_blank" rel="noopener noreferrer" title="เปิด SharePoint แล้วดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล (XLSX)">📥 ดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล</a>
     <span class="search-wrap">
       <label for="uz-block-select">UZ BLOCK:</label>
       <select id="uz-block-select" title="เลือก UZ เพื่อดู Cause/Effect ภายใน และ UZ ต้นทางที่เชื่อมเข้ามา" disabled>
