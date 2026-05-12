@@ -19,6 +19,17 @@
       display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
       padding: 10px 12px; background: #1a1a24; border-bottom: 1px solid #2a2a38;
     }
+    .toolbar-contact {
+      flex: 0 0 100%;
+      width: 100%;
+      text-align: right;
+      font-size: 11px;
+      line-height: 1.35;
+      color: #a8a8bc;
+      padding-bottom: 6px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid #2a2a38;
+    }
     .toolbar label { margin-right: 4px; }
     .toolbar input[type="file"] { display: none; }
     .toolbar button, .toolbar .btn, .toolbar a.btn-link {
@@ -44,7 +55,7 @@
     .toolbar .mode-wrap button.active { background: #4a6cf7; border-color: #4a6cf7; }
     #graph-container {
       width: 100%;
-      height: calc(100vh - 52px);
+      height: calc(100vh - 88px);
       min-height: 400px;
       background: #000000 !important;
       background-color: #000000 !important;
@@ -128,6 +139,7 @@
 </head>
 <body style="background:#000000!important;background-color:#000000!important;">
   <div class="toolbar">
+    <div class="toolbar-contact" role="note">Anything else, please contact: Sutthichai S</div>
     <label class="btn" for="file-input">📂 เลือก CSV/Excel</label>
     <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
     <a class="btn btn-link" role="button" href="https://thaioilgroup0.sharepoint.com/:x:/s/CFPOperations/IQAg_GiUohHeR5oU4lzE9Lk7Ae5OVwTtzaPH9_TwZyOSvM8?e=wt6Qxn" target="_blank" rel="noopener noreferrer" title="เปิด SharePoint แล้วดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล (XLSX)">📥 ดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล</a>
@@ -268,24 +280,30 @@
     return rows;
   }
 
+  /** ชื่อไฟล์ Excel ที่วางไว้ในโฟลเดอร์เดียวกับ index.html (สำเนาจาก CED PROJECT) — ใช้กับปุ่ม/โหลดอัตโนมัติ */
+  const DEFAULT_BUNDLED_XLSX = 'CED 106&107 - Copy - Copy.xlsx';
+
+  function parseExcelArrayBuffer(arrayBuffer) {
+    const wb = XLSX.read(arrayBuffer, { type: 'array', raw: true });
+    const first = wb.SheetNames[0];
+    let sheet = wb.Sheets[first];
+    for (const n of wb.SheetNames) {
+      const s = wb.Sheets[n];
+      const a = XLSX.utils.sheet_to_json(s, { header: 1 });
+      if (a.length && a[0] && a[0].some(c => String(c).indexOf('UZ BLOCK') !== -1 || String(c).indexOf('Cause_Tag') !== -1)) {
+        sheet = s;
+        break;
+      }
+    }
+    return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  }
+
   function parseExcelFile(file) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
       r.onload = function () {
         try {
-          const wb = XLSX.read(r.result, { type: 'array', raw: true });
-          const first = wb.SheetNames[0];
-          let sheet = wb.Sheets[first];
-          for (const n of wb.SheetNames) {
-            const s = wb.Sheets[n];
-            const a = XLSX.utils.sheet_to_json(s, { header: 1 });
-            if (a.length && a[0] && a[0].some(c => String(c).indexOf('UZ BLOCK') !== -1 || String(c).indexOf('Cause_Tag') !== -1)) {
-              sheet = s;
-              break;
-            }
-          }
-          const arr = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-          resolve(arr);
+          resolve(parseExcelArrayBuffer(r.result));
         } catch (e) {
           reject(e);
         }
@@ -2723,26 +2741,49 @@
     syncUzBlockDropdown();
   }
 
+  function applyLoadedRows(rows) {
+    graphData = buildGraphFromRows(rows);
+    isolatedSet = null;
+    drillState = { mode: 'home' };
+    clearNavHistory();
+    hideSearchSuggestions();
+    populateUzBlockDropdown();
+    initGraph();
+  }
+
   function runWithFile(file) {
     const isExcel = /\.xlsx?$/i.test(file.name);
     const load = isExcel ? parseExcelFile(file) : parseCSVFile(file);
-    load.then(rows => {
-      graphData = buildGraphFromRows(rows);
-      isolatedSet = null;
-      drillState = { mode: 'home' };
-      clearNavHistory();
-      hideSearchSuggestions();
-      populateUzBlockDropdown();
-      initGraph();
-    }).catch(err => {
+    load.then(applyLoadedRows).catch(err => {
       alert('ไม่สามารถโหลดไฟล์ได้: ' + err.message);
     });
+  }
+
+  function loadBundledDefaultXlsx(showAlertOnFail) {
+    const base = new URL('.', window.location.href);
+    const url = new URL(encodeURIComponent(DEFAULT_BUNDLED_XLSX), base);
+    return fetch(url.href)
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        return res.arrayBuffer();
+      })
+      .then(parseExcelArrayBuffer)
+      .then(applyLoadedRows)
+      .catch(function (err) {
+        if (showAlertOnFail) {
+          alert('โหลดไฟล์เริ่มต้นไม่ได้: ' + err.message + '\n\nวางไฟล์ "' + DEFAULT_BUNDLED_XLSX + '" ไว้โฟลเดอร์เดียวกับหน้านี้ หรือเปิดผ่านเว็บเซิร์ฟเวอร์ (ไม่ใช่ file://) หรือใช้ปุ่มเลือกไฟล์');
+        } else {
+          console.warn('CED default bundled xlsx not loaded:', err.message);
+        }
+      });
   }
 
   document.getElementById('file-input').addEventListener('change', function () {
     const f = this.files[0];
     if (f) runWithFile(f);
   });
+
+  loadBundledDefaultXlsx(false);
 
   document.getElementById('uz-block-select').addEventListener('change', function () {
     const v = this.value;
@@ -2843,7 +2884,7 @@
     lastPointer.y = e.pageY;
   });
 
-  console.log('CED Cause & Effect Graph ready. Upload CSV or Excel.');
+  console.log('CED Cause & Effect Graph ready. Default xlsx loads when possible; or upload CSV/Excel.');
 })();
   </script>
 </body>
