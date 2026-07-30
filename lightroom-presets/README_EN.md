@@ -2,6 +2,28 @@
 
 A collection of Lightroom presets that simulate Japanese photography styles and Ricoh GR IV film modes for use with Lightroom Mobile and Desktop.
 
+## 📥 How to Download
+
+### Quick Download (Recommended):
+
+**Direct Download Links - Right-click → Save As:**
+
+**Japanese Styles:**
+- [Japanese Soft Film](https://raw.githubusercontent.com/Kumtong707/CED/cursor/lightroom-ricoh-presets-332c/lightroom-presets/japanese-styles/Japanese-Soft-Film.xmp)
+- [Tokyo Street](https://raw.githubusercontent.com/Kumtong707/CED/cursor/lightroom-ricoh-presets-332c/lightroom-presets/japanese-styles/Tokyo-Street.xmp)
+- [Kyoto Moody](https://raw.githubusercontent.com/Kumtong707/CED/cursor/lightroom-ricoh-presets-332c/lightroom-presets/japanese-styles/Kyoto-Moody.xmp)
+
+**Ricoh GR IV:**
+- [Ricoh GR Positive Film](https://raw.githubusercontent.com/Kumtong707/CED/cursor/lightroom-ricoh-presets-332c/lightroom-presets/ricoh-gr-iv/Ricoh-GR-Positive-Film.xmp)
+- [Ricoh GR Negative Film](https://raw.githubusercontent.com/Kumtong707/CED/cursor/lightroom-ricoh-presets-332c/lightroom-presets/ricoh-gr-iv/Ricoh-GR-Negative-Film.xmp)
+- [Ricoh GR Snap](https://raw.githubusercontent.com/Kumtong707/CED/cursor/lightroom-ricoh-presets-332c/lightroom-presets/ricoh-gr-iv/Ricoh-GR-Snap.xmp)
+
+📖 **[Complete Download Guide](HOW_TO_DOWNLOAD.md)** - Multiple download methods available!
+
+Or **[Download All as ZIP](https://github.com/Kumtong707/CED/archive/refs/heads/cursor/lightroom-ricoh-presets-332c.zip)**
+
+---
+
 ## 📦 Included Files
 
 ### Japanese Styles
