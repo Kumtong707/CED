@@ -9,54 +9,149 @@
     /* สีดำคงที่ — ใช้ !important เพื่อไม่ให้ธีม SharePoint / parent page ทับ */
     html, body {
       margin: 0;
+      height: 100%;
       min-height: 100%;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       background: #000000 !important;
       background-color: #000000 !important;
       color: #e0e0e0;
     }
-    .toolbar {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-      padding: 10px 12px; background: #1a1a24; border-bottom: 1px solid #2a2a38;
+    body {
+      display: flex;
+      flex-direction: column;
     }
-    .toolbar-contact {
-      flex: 0 0 100%;
-      width: 100%;
-      text-align: right;
+    .app-header {
+      flex-shrink: 0;
+      background: #111118;
+      border-bottom: 1px solid #2a2a36;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px 8px;
+    }
+    .brand-mark {
+      width: 10px;
+      height: 28px;
+      border-radius: 3px;
+      background: #6b8cff;
+      flex-shrink: 0;
+    }
+    .brand-copy {
+      min-width: 0;
+      flex: 1;
+    }
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: 0.01em;
+      color: #f3f4f8;
+      line-height: 1.25;
+    }
+    .brand-copy p {
+      margin: 2px 0 0;
       font-size: 11px;
-      line-height: 1.35;
-      color: #a8a8bc;
-      padding-bottom: 6px;
-      margin-bottom: 2px;
-      border-bottom: 1px solid #2a2a38;
+      color: #8b8b9c;
+      line-height: 1.3;
     }
-    .toolbar label { margin-right: 4px; }
-    .toolbar input[type="file"] { display: none; }
-    .toolbar button, .toolbar .btn, .toolbar a.btn-link {
-      padding: 8px 14px; border-radius: 6px; border: 1px solid #3a3a4a;
-      background: #252532; color: #e0e0e0; cursor: pointer; font-size: 13px;
+    .header-contact {
+      margin-left: auto;
+      font-size: 11px;
+      color: #7a7a8c;
+      white-space: nowrap;
     }
-    .toolbar a.btn-link {
-      display: inline-block; text-decoration: none; line-height: normal;
+    .header-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 10px;
+      padding: 0 16px 10px;
     }
-    .toolbar button:hover, .toolbar .btn:hover, .toolbar a.btn-link:hover { background: #32324a; }
-    .toolbar button:disabled { opacity: 0.45; cursor: not-allowed; }
-    .toolbar .search-wrap { display: flex; gap: 6px; align-items: center; }
-    .toolbar input[type="text"] {
-      padding: 8px 10px; border-radius: 6px; border: 1px solid #3a3a4a;
-      background: #1e1e2a; color: #e0e0e0; width: 180px; font-size: 13px;
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
-    .toolbar select {
-      padding: 7px 10px; border-radius: 6px; border: 1px solid #3a3a4a;
-      background: #1e1e2a; color: #e0e0e0; font-size: 13px;
-      min-width: 200px; max-width: min(420px, 40vw);
+    .ctrl-group.grow { flex: 1 1 280px; min-width: 220px; }
+    .ctrl-sep {
+      width: 1px;
+      height: 22px;
+      background: #2e2e3c;
+      flex-shrink: 0;
     }
-    .toolbar .mode-wrap { display: flex; gap: 4px; }
-    .toolbar .mode-wrap button.active { background: #4a6cf7; border-color: #4a6cf7; }
+    .app-header label.field-label {
+      margin: 0;
+      font-size: 11px;
+      color: #9a9aac;
+      white-space: nowrap;
+    }
+    .app-header input[type="file"] { display: none; }
+    .app-header button, .app-header .btn, .app-header a.btn-link {
+      padding: 7px 12px;
+      border-radius: 7px;
+      border: 1px solid #343446;
+      background: #1c1c28;
+      color: #e8e8f0;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    .app-header a.btn-link {
+      display: inline-block;
+      text-decoration: none;
+    }
+    .app-header button:hover, .app-header .btn:hover, .app-header a.btn-link:hover {
+      background: #27273a;
+      border-color: #4a4a62;
+    }
+    .app-header button:disabled { opacity: 0.42; cursor: not-allowed; }
+    .app-header .btn-primary {
+      background: #2a3a78;
+      border-color: #3d56b8;
+      color: #eef2ff;
+    }
+    .app-header .btn-primary:hover { background: #334790; }
+    .app-header input[type="text"], .app-header input[type="number"], .app-header select {
+      padding: 7px 10px;
+      border-radius: 7px;
+      border: 1px solid #343446;
+      background: #16161f;
+      color: #e8e8f0;
+      font-size: 12px;
+    }
+    .app-header input[type="text"] { width: min(260px, 100%); }
+    .app-header select {
+      min-width: 200px;
+      max-width: min(420px, 46vw);
+    }
+    .header-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 14px;
+      padding: 7px 16px;
+      border-top: 1px solid #242432;
+      background: #0d0d12;
+      font-size: 11px;
+      color: #b4b4c4;
+    }
+    .header-legend .hint { color: #8e8ea0; }
+    .header-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .header-legend i {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+    .header-legend i.sq { border-radius: 2px; width: 12px; height: 8px; }
+    .search-wrap { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .search-autocomplete-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-autocomplete-wrap .search-input-row { display: flex; gap: 6px; align-items: center; }
     #graph-container {
       width: 100%;
-      height: calc(100vh - 88px);
-      min-height: 400px;
+      flex: 1 1 auto;
+      min-height: 360px;
+      height: auto;
       background: #000000 !important;
       background-color: #000000 !important;
     }
@@ -138,45 +233,55 @@
   </style>
 </head>
 <body style="background:#000000!important;background-color:#000000!important;">
-  <div class="toolbar">
-    <div class="toolbar-contact" role="note">Anything else, please contact: Sutthichai S</div>
-    <label class="btn" for="file-input">📂 เลือก CSV/Excel</label>
-    <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
-    <a class="btn btn-link" role="button" href="https://thaioilgroup0.sharepoint.com/:x:/s/CFPOperations/IQAg_GiUohHeR5oU4lzE9Lk7Ae5OVwTtzaPH9_TwZyOSvM8?e=wt6Qxn" target="_blank" rel="noopener noreferrer" title="เปิด SharePoint แล้วดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล (XLSX)">📥 ดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล</a>
-    <span class="search-wrap">
-      <label for="uz-block-select">UZ BLOCK:</label>
-      <select id="uz-block-select" title="เลือก UZ เพื่อดู Cause/Effect ภายใน และ UZ ต้นทางที่เชื่อมเข้ามา" disabled>
-        <option value="">— โหลดไฟล์ก่อน —</option>
-      </select>
-    </span>
-    <span class="search-wrap search-autocomplete-wrap" id="search-autocomplete-wrap">
-      <label>ค้นหา (contain):</label>
-      <div class="search-input-row">
-        <input type="text" id="search-global" placeholder="พิมพ์เพื่อดูรายการแนะนำ แล้วเลือก หรือกดค้นหา" autocomplete="off" spellcheck="false">
-        <button type="button" id="btn-search">ค้นหา</button>
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div class="brand-copy">
+        <h1>Cause &amp; Effect</h1>
+        <p>U-10600 &amp; U-10700 · HCU-3 &amp; RHCU · COO2</p>
       </div>
-      <div id="search-suggestions" class="search-suggestions" hidden role="listbox" aria-label="รายการแนะนำการค้นหา"></div>
-    </span>
-    <button type="button" id="btn-home" title="Reset selection">🏠 Home</button>
-    <button type="button" id="btn-back" title="กลับไปมุมมองที่แสดงก่อนหน้า" disabled>← ย้อนกลับ</button>
-    <button type="button" id="btn-reset-view">แสดงทั้งหมด</button>
-    <button type="button" id="btn-reset-isolate">ยกเลิก Isolate</button>
-    <span class="search-wrap">
-      <label title="คูณกับระยะอัตโนมัติ (~80% ของพื้นที่กราฟ)">สเกลระยะ:</label>
-      <input type="number" id="link-distance" value="165" min="40" max="500" style="width:70px">
-    </span>
-    <!-- 3D removed: keep 2D only -->
-    <div class="legend">
-      <div class="legend-hints">
-        <span>Click at line for focus</span>
-        <span>Red Border = Active to others UZ</span>
+      <div class="header-contact" role="note">Contact: Sutthichai S</div>
+    </div>
+    <div class="header-controls">
+      <div class="ctrl-group">
+        <label class="btn btn-primary" for="file-input">เลือกไฟล์</label>
+        <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
+        <a class="btn btn-link" role="button" href="https://thaioilgroup0.sharepoint.com/:x:/s/CFPOperations/IQAg_GiUohHeR5oU4lzE9Lk7Ae5OVwTtzaPH9_TwZyOSvM8?e=wt6Qxn" target="_blank" rel="noopener noreferrer" title="เปิด SharePoint แล้วดาวน์โหลดไฟล์ที่ใช้ในการแสดงผล (XLSX)">ดาวน์โหลดข้อมูล</a>
       </div>
-      <span style="color:#d7d7e2; font-weight:700;">CAUSE AND EFFECT U-10600 &amp; U-10700 (HCU-3 &amp; RHCU) BY COO2</span>
+      <div class="ctrl-sep" aria-hidden="true"></div>
+      <div class="ctrl-group grow">
+        <label class="field-label" for="uz-block-select">UZ BLOCK</label>
+        <select id="uz-block-select" title="เลือก UZ เพื่อดู Cause/Effect ภายใน และ UZ ต้นทางที่เชื่อมเข้ามา" disabled>
+          <option value="">— โหลดไฟล์ก่อน —</option>
+        </select>
+        <span class="search-wrap search-autocomplete-wrap" id="search-autocomplete-wrap">
+          <label class="field-label" for="search-global">ค้นหา</label>
+          <div class="search-input-row">
+            <input type="text" id="search-global" placeholder="แท็ก, UZ, คำอธิบาย" autocomplete="off" spellcheck="false">
+            <button type="button" id="btn-search">ค้นหา</button>
+          </div>
+          <div id="search-suggestions" class="search-suggestions" hidden role="listbox" aria-label="รายการแนะนำการค้นหา"></div>
+        </span>
+      </div>
+      <div class="ctrl-sep" aria-hidden="true"></div>
+      <div class="ctrl-group">
+        <button type="button" id="btn-home" title="กลับหน้าแรก">Home</button>
+        <button type="button" id="btn-back" title="กลับไปมุมมองที่แสดงก่อนหน้า" disabled>ย้อนกลับ</button>
+        <button type="button" id="btn-reset-view">แสดงทั้งหมด</button>
+        <button type="button" id="btn-reset-isolate">ยกเลิก Isolate</button>
+        <label class="field-label" for="link-distance" title="คูณกับระยะอัตโนมัติ">สเกล</label>
+        <input type="number" id="link-distance" value="165" min="40" max="500" style="width:64px">
+      </div>
+    </div>
+    <div class="header-legend">
+      <span class="hint">คลิกเส้นเพื่อโฟกัส</span>
+      <span class="hint">กรอบแดง = Active ไป UZ อื่น</span>
       <span><i style="background:#6b8cff;"></i> UZ BLOCK</span>
       <span><i style="background:#4ade80;"></i> Cause</span>
+      <span><i class="sq" style="background:#c4b5fd;"></i> Command</span>
       <span><i style="background:#fbbf24;"></i> Effect</span>
     </div>
-  </div>
+  </header>
   <div id="graph-container" style="background:#000000!important;background-color:#000000!important;"></div>
   <div id="tooltip"></div>
   <div id="relation-panel">
@@ -626,6 +731,134 @@
     return ids;
   }
 
+  function resolveUzHopTargetNode(graph, effectTag, currentUz, effectNode) {
+    const tag = normalizeTag(effectTag || '');
+    const cur = normalizeTag(currentUz || '');
+    if (!tag || tag === cur) return null;
+    if (graph.uzBlocks && graph.uzBlocks.has(tag)) {
+      const uz = graph.nodeById.get('uz_' + tag);
+      if (uz) return uz;
+    }
+    const cids = graph.causeTagToNodeIds && graph.causeTagToNodeIds.get(tag);
+    if (cids && cids.length) {
+      for (let i = 0; i < cids.length; i++) {
+        const c = graph.nodeById.get(cids[i]);
+        if (!c || c.type !== 'cause' || !c.uzBlock) continue;
+        if (normalizeTag(c.uzBlock) === cur) continue;
+        if (graph.uzBlocks && graph.uzBlocks.has(c.uzBlock) && normalizeTag(c.uzBlock) === tag) {
+          const uz = graph.nodeById.get('uz_' + c.uzBlock);
+          if (uz) return uz;
+        }
+        return c;
+      }
+    }
+    return effectNode || null;
+  }
+
+  /**
+   * Drill UZ แบบก้าวเดียว: [UZ ที่คลิก] → [TRIP|DTTM|CLOSE|OPEN] → [UZ/แท็กปลายทาง]
+   * คลิกปลายทางที่เป็น UZ เพื่อเดินโซ่คำสั่งต่อ (เช่น 040 → 0418 → 200)
+   */
+  function getUzCommandHopGraph(graph, uzBlockKey) {
+    const empty = { nodes: [], links: [] };
+    if (!graph || !uzBlockKey) return empty;
+    const uzId = 'uz_' + uzBlockKey;
+    const uzNode = graph.nodeById.get(uzId);
+    if (!uzNode) return empty;
+
+    const causeSet = new Set();
+    graph.nodes.forEach(n => {
+      if (n.type === 'cause' && n.uzBlock === uzBlockKey) causeSet.add(n.id);
+    });
+
+    const groups = new Map();
+    graph.links.forEach(l => {
+      if (!l || l.type !== 'effect') return;
+      if (shouldHideHsResetEffectLink(l, graph)) return;
+      const s = linkNorm(l, 's');
+      if (!causeSet.has(s)) return;
+      const t = linkNorm(l, 't');
+      const eff = graph.nodeById.get(t);
+      if (!eff || eff.type !== 'effect') return;
+      const tag = normalizeTag(eff.effectTag || l.effectTag || '');
+      const target = resolveUzHopTargetNode(graph, tag, uzBlockKey, eff);
+      if (!target || target.id === uzId) return;
+      const ak = normalizeEffectActionGroupKey(l.effectAction);
+      const uzLike = target.type === 'uzblock' || /UZ/i.test(tag);
+      if (!uzLike && !isNamedCommandAction(ak)) return;
+      if (!groups.has(ak)) groups.set(ak, new Map());
+      groups.get(ak).set(target.id, target);
+    });
+
+    const nodes = [uzNode];
+    const links = [];
+    const seen = new Set([uzId]);
+    const safeUz = String(uzBlockKey).replace(/[^a-zA-Z0-9]/g, '_');
+    const cmdOrder = ['TRIP', 'CLOSE', 'OPEN', 'DTTM', 'ACTIVATE', 'RESET'];
+    const actionKeys = Array.from(groups.keys()).sort((a, b) => {
+      const ia = cmdOrder.indexOf(a);
+      const ib = cmdOrder.indexOf(b);
+      const ra = ia < 0 ? 80 : ia;
+      const rb = ib < 0 ? 80 : ib;
+      if (ra !== rb) return ra - rb;
+      return String(a).localeCompare(String(b));
+    });
+
+    const allTargetIds = new Set();
+    groups.forEach(m => m.forEach((_, id) => allTargetIds.add(id)));
+    const namedCount = actionKeys.filter(isNamedCommandAction).length;
+    let onlySingleUzHop = false;
+    if (allTargetIds.size === 1 && namedCount <= 1) {
+      const onlyId = Array.from(allTargetIds)[0];
+      const onlyNode = graph.nodeById.get(onlyId);
+      onlySingleUzHop = !!(onlyNode && onlyNode.type === 'uzblock');
+    }
+
+    actionKeys.forEach(ak => {
+      const targets = groups.get(ak);
+      const useCmd = isNamedCommandAction(ak) && !onlySingleUzHop;
+      let fromId = uzId;
+      if (useCmd) {
+        const cmdId = 'cmdhop_' + safeUz + '_' + ak;
+        nodes.push({
+          id: cmdId,
+          type: 'effect_bundle',
+          name: ak,
+          bundleActionKey: ak,
+          effectTargetId: '',
+          effectTag: '',
+          bundleFanIn: targets.size,
+          causeTag: '',
+          uzBlock: uzBlockKey,
+          hopCommand: true,
+        });
+        seen.add(cmdId);
+        links.push({
+          source: uzId,
+          target: cmdId,
+          type: 'effect_bundle_in',
+          effectAction: ak,
+        });
+        fromId = cmdId;
+      }
+      targets.forEach(tn => {
+        if (!seen.has(tn.id)) {
+          nodes.push(tn);
+          seen.add(tn.id);
+        }
+        links.push({
+          source: fromId,
+          target: tn.id,
+          type: useCmd ? 'effect_bundle_out' : 'uz-effect',
+          effectAction: ak,
+          effectTag: tn.effectTag || tn.causeTag || tn.uzBlock || '',
+        });
+      });
+    });
+
+    return { nodes, links };
+  }
+
   function populateUzBlockDropdown() {
     const sel = document.getElementById('uz-block-select');
     if (!sel) return;
@@ -803,7 +1036,7 @@
 
   let graphData = null;
   let isolatedSet = null;
-  /** 'home' | 'uz' | 'search' | 'effect_bridge' | 'effect_next_uz' | 'effect_detail' | 'effect_drill_up' — mode uz: uzShowCauses false = แสดงแค่ UZ→Effect; true = แสดง Cause ใน UZ */
+  /** 'home' | 'uz' | 'search' | 'effect_bridge' | 'effect_next_uz' | 'effect_detail' | 'effect_drill_up' — mode uz: uzShowCauses false = UZ→command→ปลายทาง (ก้าวเดียว); true = แสดง Cause ใน UZ */
   let drillState = { mode: 'home' };
   /** stack ของมุมมองก่อนเปลี่ยน (สำหรับปุ่มย้อนกลับ) */
   let viewHistory = [];
@@ -818,7 +1051,7 @@
   let layoutResizeListenerAttached = false;
   /** โฟกัสจากคลิกเส้น Action: { nodeIds: Set, linkMatch(l) } | null */
   let actionLinkFocus = null;
-  /** หน้าแรก UZ: หลัง simulation หยุด ให้ขยับเบาๆ รอบจุด grid */
+  /** หน้าแรก UZ: ขยับเบาๆ รอบจุดที่กระจายเต็มจอ */
   let homeUzAmbientActive = false;
 
   function isHomePageView() {
@@ -828,6 +1061,16 @@
   /** Drill UZ แบบเต็ม: แสดง Cause_Tag (ระดับเดียวกับตัวอย่างกราฟละเอียด) */
   function isUzFullDrillWithCauses() {
     return drillState.mode === 'uz' && !!drillState.uzBlock && drillState.uzShowCauses === true;
+  }
+
+  /** Drill UZ ก้าวเดียว: ต้นทาง → TRIP/DTTM/… → ปลายทาง */
+  function isUzCommandHopView() {
+    return drillState.mode === 'uz' && !!drillState.uzBlock && drillState.uzShowCauses === false;
+  }
+
+  function isNamedCommandAction(ak) {
+    const u = String(ak || '').toUpperCase();
+    return u === 'TRIP' || u === 'CLOSE' || u === 'OPEN' || u === 'DTTM' || u === 'ACTIVATE' || u === 'RESET';
   }
 
   function noDirectionalParticlesView() {
@@ -865,32 +1108,55 @@
     });
   }
 
+  function clearNodeFixedPositions(nodes) {
+    if (!nodes) return;
+    nodes.forEach(n => {
+      if (!n) return;
+      delete n.fx;
+      delete n.fy;
+    });
+  }
+
   function applyHomeUzAmbientDrawOffset() {
     if (!isHomePageView() || !graphInstance) return;
     const gd = graphInstance.graphData();
     const ns = gd && gd.nodes;
     if (!ns || !ns.length) return;
-    const t = performance.now() * 0.00038;
-    const amp = 2.9;
+    const t = performance.now() * 0.00042;
     ns.forEach(n => {
       if (n.type !== 'uzblock' || n._homeLayoutX == null) return;
       if (n.fx != null || n.fy != null) return;
       const ph = n._homeMotionPhase != null ? n._homeMotionPhase : 0;
+      const amp = 6.4 + 1.6 * Math.sin(ph * 2.1);
       n.x = n._homeLayoutX + amp * Math.sin(t * 0.95 + ph);
-      n.y = n._homeLayoutY + amp * Math.cos(t * 0.8 + ph * 1.65);
+      n.y = n._homeLayoutY + amp * Math.cos(t * 0.78 + ph * 1.65);
     });
   }
 
+  function neutralizeHomeSimForces(g) {
+    if (!g || typeof g.d3Force !== 'function') return;
+    try {
+      const ch = g.d3Force('charge');
+      if (ch && typeof ch.strength === 'function') ch.strength(0);
+      const linkF = g.d3Force('link');
+      if (linkF && typeof linkF.strength === 'function') linkF.strength(0);
+      g.d3Force('collide', null);
+      g.d3Force('center', null);
+      g.d3Force('ltrFlow', null);
+    } catch (e) { /* ignore */ }
+  }
+
   /**
-   * หน้าแรก: กระจาย UZ BLOCK ทั่วพื้นที่ (~80% viewport) แบบ spiral (Vogel)
-   * ไม่ใช้กริดแนวนอน — ใช้ทั้งความกว้างและความสูงของจอ
+   * หน้าแรก: กระจาย UZ BLOCK เต็มพื้นที่จอ (วงรี→สี่เหลี่ยม) แล้วแยกกล่องไม่ให้ทับ
+   * จากนั้นขยับเบาๆ รอบจุดเหล่านี้ — ไม่ให้ charge/link ดึงก้อนกลับมาซ้อนกัน
    */
   function assignHomeUzBlockTargets(nodes, links) {
     const el = document.getElementById('graph-container');
     const W = (el && el.clientWidth) || 920;
     const H = (el && el.clientHeight) || 680;
-    const uw = W * VIEWPORT_LAYOUT_FRACTION;
-    const uh = H * VIEWPORT_LAYOUT_FRACTION;
+    const fill = 0.95;
+    const uw = W * fill;
+    const uh = H * fill;
     const n = nodes.length;
     if (!n) return;
     clearHomeUzLayoutPropsOnNodes(nodes);
@@ -901,44 +1167,80 @@
       return;
     }
 
-    const marginX = uw * 0.04;
-    const marginY = uh * 0.04;
-    const rx = Math.max((uw - 2 * marginX) / 2, 1);
-    const ry = Math.max((uh - 2 * marginY) / 2, 1);
+    const boxHalfW = 78;
+    const boxHalfH = 28;
+    const hw = Math.max(uw / 2 - boxHalfW, 40);
+    const hh = Math.max(uh / 2 - boxHalfH, 28);
     const golden = Math.PI * (3 - Math.sqrt(5));
-
     const ordered = nodes.slice().sort((a, b) =>
-      String(a.id || '').localeCompare(String(b.id || ''), undefined, { numeric: true }));
+      String(a.uzBlock || a.id || '').localeCompare(String(b.uzBlock || b.id || ''), undefined, { numeric: true }));
 
     for (let i = 0; i < n; i++) {
       const theta = i * golden;
-      const rho = Math.sqrt((i + 0.5) / n);
-      ordered[i]._homeLayoutX = rho * rx * Math.cos(theta);
-      ordered[i]._homeLayoutY = rho * ry * Math.sin(theta);
+      const rho = Math.sqrt((i + 0.35) / n);
+      let ux = rho * Math.cos(theta);
+      let uy = rho * Math.sin(theta);
+      const c = Math.cos(theta);
+      const s = Math.sin(theta);
+      const den = Math.max(Math.abs(c), Math.abs(s), 1e-6);
+      const squareScale = 1 / den;
+      const k = 0.78;
+      const m = 1 + k * (squareScale - 1);
+      ordered[i]._homeLayoutX = ux * m * hw;
+      ordered[i]._homeLayoutY = uy * m * hh;
     }
 
-    pinHomeOppositeUzPair(nodes, uw);
-  }
+    const minDx = 168;
+    const minDy = 54;
+    for (let iter = 0; iter < 42; iter++) {
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = ordered[i];
+          const b = ordered[j];
+          const dx = b._homeLayoutX - a._homeLayoutX;
+          const dy = b._homeLayoutY - a._homeLayoutY;
+          const nx = dx / minDx;
+          const ny = dy / minDy;
+          const d2 = nx * nx + ny * ny;
+          if (d2 >= 1 || d2 <= 1e-8) continue;
+          const d = Math.sqrt(d2);
+          const push = (1 - d) * 0.52;
+          const px = (nx / d) * minDx * push * 0.5;
+          const py = (ny / d) * minDy * push * 0.5;
+          a._homeLayoutX -= px;
+          a._homeLayoutY -= py;
+          b._homeLayoutX += px;
+          b._homeLayoutY += py;
+        }
+      }
+      ordered.forEach(nd => {
+        nd._homeLayoutX = Math.max(-hw, Math.min(hw, nd._homeLayoutX));
+        nd._homeLayoutY = Math.max(-hh, Math.min(hh, nd._homeLayoutY));
+      });
+    }
 
-  /** หน้าแรก: ให้ 106-UZ-490 กับ 106-UZ-040 อยู่คนละซ้าย/ขวา */
-  function pinHomeOppositeUzPair(nodes, uw) {
-    const LEFT_TAG = '106-UZ-490';
-    const RIGHT_TAG = '106-UZ-040';
-    let nL = null;
-    let nR = null;
-    nodes.forEach(nd => {
-      if (nd.type !== 'uzblock') return;
-      const ub = nd.uzBlock || '';
-      if (ub === LEFT_TAG) nL = nd;
-      if (ub === RIGHT_TAG) nR = nd;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    ordered.forEach(nd => {
+      minX = Math.min(minX, nd._homeLayoutX);
+      maxX = Math.max(maxX, nd._homeLayoutX);
+      minY = Math.min(minY, nd._homeLayoutY);
+      maxY = Math.max(maxY, nd._homeLayoutY);
     });
-    if (!nL || !nR) return;
-    const mx = uw * 0.41;
-    nL._homeLayoutX = -mx;
-    nR._homeLayoutX = mx;
-    const y = (nL._homeLayoutY + nR._homeLayoutY) / 2;
-    nL._homeLayoutY = y;
-    nR._homeLayoutY = y;
+    const bw = Math.max(maxX - minX, 1);
+    const bh = Math.max(maxY - minY, 1);
+    const scaleX = (hw * 2) / bw;
+    const scaleY = (hh * 2) / bh;
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    ordered.forEach(nd => {
+      nd._homeLayoutX = (nd._homeLayoutX - cx) * scaleX;
+      nd._homeLayoutY = (nd._homeLayoutY - cy) * scaleY;
+      nd._homeLayoutX = Math.max(-hw, Math.min(hw, nd._homeLayoutX));
+      nd._homeLayoutY = Math.max(-hh, Math.min(hh, nd._homeLayoutY));
+    });
   }
 
   function removeHomeUzLayoutForces(g) {
@@ -949,14 +1251,13 @@
     } catch (e) { /* ignore */ }
   }
 
-  /** อัปเดตเป้าหมาย home grid หลัง resize / เปลี่ยนสเกล */
+  /** อัปเดตเป้าหมายหน้าแรกหลัง resize / โหลดใหม่ — ปักพิกัดแล้วปล่อยให้ขยับเบาๆ */
   function refreshHomeUzLayoutForces(g, nodes, links) {
     if (!isHomeUzOverview(nodes, links) || !g || typeof g.d3Force !== 'function' || typeof d3 === 'undefined') return;
-    homeUzAmbientActive = false;
     assignHomeUzBlockTargets(nodes, links);
-    const sx = 0.27;
-    g.d3Force('homeUx', d3.forceX(n => (n._homeLayoutX != null ? n._homeLayoutX : 0)).strength(n => (n.type === 'uzblock' && n._homeLayoutX != null ? sx : 0)));
-    g.d3Force('homeUy', d3.forceY(n => (n._homeLayoutY != null ? n._homeLayoutY : 0)).strength(n => (n.type === 'uzblock' && n._homeLayoutY != null ? sx : 0)));
+    clearNodeFixedPositions(nodes);
+    neutralizeHomeSimForces(g);
+    removeHomeUzLayoutForces(g);
     nodes.forEach(nd => {
       if (nd._homeLayoutX != null) {
         nd.x = nd._homeLayoutX;
@@ -965,7 +1266,7 @@
         nd.vy = 0;
       }
     });
-    if (typeof g.d3ReheatSimulation === 'function') g.d3ReheatSimulation();
+    homeUzAmbientActive = true;
   }
 
   /** Effect + Cause แม่ทันที + UZ ของแต่ละ Cause (สำหรับ drill up) */
@@ -1109,19 +1410,95 @@
     return graph.uzBlocks.has(tag);
   }
 
-  /** จัดกลุ่ม Action เดียวกัน (Trip/Close/...) ไป Effect เดียวกัน — ใช้รวบเส้น */
+  function pickCauseIdForEffectTag(graph, effectTag, preferredUz) {
+    if (!graph || !graph.causeTagToNodeIds) return null;
+    const tag = normalizeTag(effectTag || '');
+    if (!tag) return null;
+    const cids = graph.causeTagToNodeIds.get(tag);
+    if (!cids || !cids.length) return null;
+    if (preferredUz) {
+      for (let i = 0; i < cids.length; i++) {
+        const c = graph.nodeById.get(cids[i]);
+        if (c && c.type === 'cause' && c.uzBlock === preferredUz) return c.id;
+      }
+    }
+    return cids[0];
+  }
+
+  /**
+   * Effect ที่ใช้แท็กเดียวกับ Cause → เหลือโหนดเขียว (Cause) อย่างเดียว
+   * คืน effectId → causeId สำหรับรีไวร์ลิงก์
+   */
+  function mergeSameTagEffectsIntoCauses(graph, nodes, preferredUz) {
+    const replace = new Map();
+    if (!graph || !nodes) return replace;
+    const nById = new Map(nodes.map(n => [n.id, n]));
+    nodes.forEach(n => {
+      if (!n || n.type !== 'effect') return;
+      const causeId = pickCauseIdForEffectTag(graph, n.effectTag, preferredUz);
+      if (!causeId || causeId === n.id) return;
+      const cause = graph.nodeById.get(causeId);
+      if (!cause || cause.type !== 'cause') return;
+      replace.set(n.id, causeId);
+      if (!nById.has(causeId)) {
+        nodes.push(cause);
+        nById.set(causeId, cause);
+      }
+    });
+    if (!replace.size) return replace;
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      if (replace.has(nodes[i].id)) nodes.splice(i, 1);
+    }
+    return replace;
+  }
+
+  function rewireLinksAfterEffectMerge(links, replace) {
+    if (!links || !replace || !replace.size) return;
+    for (let i = links.length - 1; i >= 0; i--) {
+      const l = links[i];
+      const s0 = typeof l.source === 'object' ? l.source.id : l.source;
+      const t0 = typeof l.target === 'object' ? l.target.id : l.target;
+      const s = replace.get(s0) || s0;
+      const t = replace.get(t0) || t0;
+      if (s === t) {
+        links.splice(i, 1);
+        continue;
+      }
+      if (l.type === 'cause-link' && (replace.has(s0) || replace.has(t0))) {
+        links.splice(i, 1);
+        continue;
+      }
+      l.source = s;
+      l.target = t;
+    }
+  }
+
+  /** จัดกลุ่ม Action เดียวกัน (Trip/Close/DTTM/...) ไป Effect เดียวกัน */
   function normalizeEffectActionGroupKey(effectAction) {
     const u = String(effectAction || '').trim().toUpperCase();
     if (u.includes('TRIP')) return 'TRIP';
     if (u.includes('CLOSE')) return 'CLOSE';
     if (u.includes('OPEN')) return 'OPEN';
+    if (u.includes('DTTM')) return 'DTTM';
     if (u.includes('ACTIVATE')) return 'ACTIVATE';
     if (u.includes('RESET')) return 'RESET';
     return u || 'OTHER';
   }
 
+  function actionAccentColor(actionKey) {
+    const u = String(actionKey || '').toUpperCase();
+    if (u.includes('TRIP')) return '#ef4444';
+    if (u.includes('CLOSE')) return '#fb7185';
+    if (u.includes('OPEN')) return '#22c55e';
+    if (u.includes('DTTM')) return '#a78bfa';
+    if (u.includes('ACTIVATE')) return '#3b82f6';
+    if (u.includes('RESET')) return '#d9f99d';
+    return '#94a3b8';
+  }
+
   /**
-   * ลิงก์ type=effect หลายเส้นที่ไป Effect เดียวกันด้วย Action กลุ่มเดียวกัน → Cause→โหนดรวม→Effect (แตกแขนงเข้า รวมออก)
+   * ทุกเส้น Cause→Effect ได้โหนด Command กลางทาง (DTTM/CLOSE/TRIP/OPEN)
+   * ถ้าหลาย Cause ยิง Action เดียวกันไป Effect เดียวกัน จะรวมเข้าโหนดเดียว
    */
   function bundleEffectLinksBySameAction(nodes, links) {
     if (!nodes || !links || links.length === 0) return;
@@ -1143,7 +1520,7 @@
       effectLinks.push({ link: l, s, t });
     }
     const groups = new Map();
-    const GSEP = '\x1f'; // ไม่น่าปรากฏใน node id
+    const GSEP = '\x1f';
     effectLinks.forEach(({ link, s, t }) => {
       const ak = normalizeEffectActionGroupKey(link.effectAction);
       const compoundKey = t + GSEP + ak;
@@ -1156,10 +1533,6 @@
       const sep = compoundKey.indexOf(GSEP);
       const t = compoundKey.slice(0, sep);
       const ak = compoundKey.slice(sep + 1);
-      if (arr.length < 2) {
-        arr.forEach(({ link }) => outEffect.push(link));
-        return;
-      }
       const safeT = String(t).replace(/[^a-zA-Z0-9]/g, '_');
       const bundleId = 'eb_' + safeT + '_' + ak;
       const effNode = nById.get(t);
@@ -1205,6 +1578,9 @@
     if (drillState.mode === 'effect_detail' && drillState.effectId) {
       return getEffectDetailDisplayGraph(graphData, drillState.effectId);
     }
+    if (isUzCommandHopView()) {
+      return getUzCommandHopGraph(graphData, drillState.uzBlock);
+    }
     let nodes, links;
     if (isolatedSet && isolatedSet.size > 0) {
       nodes = graphData.nodes.filter(n => isolatedSet.has(n.id));
@@ -1213,6 +1589,11 @@
         const curUz = drillState.uzBlock;
         nodes = nodes.filter(n => !shouldHideCrossUzEffectInUzDrill(graphData, n, curUz));
       }
+      const mergedReplace = mergeSameTagEffectsIntoCauses(
+        graphData,
+        nodes,
+        drillState.mode === 'uz' ? drillState.uzBlock : ''
+      );
       const visIds = new Set(nodes.map(n => n.id));
       links = graphData.links.filter(l => {
         const s = typeof l.source === 'object' ? l.source.id : l.source;
@@ -1221,15 +1602,36 @@
         if (shouldHideHsResetEffectLink(l, graphData)) return false;
         return true;
       });
+      rewireLinksAfterEffectMerge(links, mergedReplace);
+      visIds.clear();
+      nodes.forEach(n => visIds.add(n.id));
+      links = links.filter(l => {
+        const s = typeof l.source === 'object' ? l.source.id : l.source;
+        const t = typeof l.target === 'object' ? l.target.id : l.target;
+        return visIds.has(s) && visIds.has(t) && s !== t;
+      });
       (graphData.blockLinks || []).forEach(bl => {
         if (visIds.has(bl.source) && visIds.has(bl.target)) links.push(bl);
       });
       appendEffectNextUzSyntheticLinks(links, visIds);
-      if (drillState.mode === 'uz' && drillState.uzBlock && drillState.uzShowCauses === false) {
+      if (drillState.mode === 'uz' && drillState.uzBlock) {
         const uzId = 'uz_' + drillState.uzBlock;
+        const mergedCauseIds = new Set(mergedReplace.values());
         if (visIds.has(uzId)) {
+          const linked = new Set();
+          links.forEach(l => {
+            const s = typeof l.source === 'object' ? l.source.id : l.source;
+            const t = typeof l.target === 'object' ? l.target.id : l.target;
+            if (s === uzId) linked.add(t);
+            if (t === uzId) linked.add(s);
+          });
           nodes.forEach(n => {
-            if (n.type === 'effect' && visIds.has(n.id)) {
+            if (!visIds.has(n.id) || n.id === uzId || linked.has(n.id)) return;
+            if (drillState.uzShowCauses === false && n.type === 'effect') {
+              links.push({ source: uzId, target: n.id, type: 'uz-effect' });
+              return;
+            }
+            if (n.type === 'cause' && mergedCauseIds.has(n.id)) {
               links.push({ source: uzId, target: n.id, type: 'uz-effect' });
             }
           });
@@ -1248,7 +1650,7 @@
     if (n.type === 'cause' && n.causeTag && n.causeTag.toUpperCase().includes('HS')) return '#22c55e';
     if (n.type === 'cause') return '#4ade80';
     if (n.type === 'effect') return '#fbbf24';
-    if (n.type === 'effect_bundle') return '#64748b';
+    if (n.type === 'effect_bundle') return actionAccentColor(n.bundleActionKey);
     if (n.type === 'detail_tag') return '#f59e0b';
     if (n.type === 'detail_desc') return '#8b5cf6';
     return '#a0a0b0';
@@ -1272,20 +1674,12 @@
     if (link.type === 'drill-next-uz') return '#22d3ee';
     if (link.type === 'uz-effect') return 'rgba(245,245,252,0.92)';
     if (link.type === 'effect_bundle_in' || link.type === 'effect_bundle_out') {
-      const a = (link.effectAction || '').toUpperCase();
-      if (a.includes('TRIP')) return '#ef4444';
-      if (a.includes('OPEN')) return '#22c55e';
-      if (a.includes('CLOSE')) return '#ef4444';
-      if (a.includes('ACTIVATE')) return '#3b82f6';
-      if (a.includes('RESET')) return '#d9f99d';
-      return 'rgba(180,180,200,0.72)';
+      return actionAccentColor(link.effectAction);
     }
     const a = (link.effectAction || '').toUpperCase();
-    if (a.includes('TRIP')) return '#ef4444';
-    if (a.includes('OPEN')) return '#22c55e';
-    if (a.includes('CLOSE')) return '#ef4444';
-    if (a.includes('ACTIVATE')) return '#3b82f6';
-    if (a.includes('RESET')) return '#d9f99d';
+    if (a.includes('TRIP') || a.includes('CLOSE') || a.includes('OPEN') || a.includes('DTTM') || a.includes('ACTIVATE') || a.includes('RESET')) {
+      return actionAccentColor(a);
+    }
     return 'rgba(180,180,200,0.6)';
   }
 
@@ -1299,6 +1693,9 @@
   function linkWidthForGraph(link) {
     if (link.type === 'block-link' && isHomePageView()) return 1.35;
     if (link.type === 'cause-link' && isUzFullDrillWithCauses()) return 1.22;
+    if (isUzCommandHopView() && (link.type === 'effect_bundle_in' || link.type === 'effect_bundle_out' || link.type === 'uz-effect')) {
+      return 1.7;
+    }
     return 1;
   }
 
@@ -1513,8 +1910,10 @@
       return;
     }
     if (node.type === 'effect_bundle') {
-      tag = (node.bundleActionKey || '—') + ' → ' + (node.effectTag || '—');
-      desc = 'รวม ' + (node.bundleFanIn || 0) + ' เส้น (Action เดียวกัน) แล้วแตกไป Effect';
+      tag = node.bundleActionKey || 'Command';
+      desc = node.hopCommand
+        ? ('คำสั่งจาก UZ ไปปลายทาง' + (node.bundleFanIn ? ' · ' + node.bundleFanIn + ' ปลายทาง' : ''))
+        : ('คำสั่งจาก Cause ไป Effect' + (node.effectTag ? ' · ' + node.effectTag : ''));
       const px = (ev && ev.pageX != null) ? ev.pageX : lastPointer.x;
       const py = (ev && ev.pageY != null) ? ev.pageY : lastPointer.y;
       tip.innerHTML = '<div class="tt-tag">' + escapeHtml(tag) + '</div><div class="tt-desc">' + escapeHtml(desc) + '</div>';
@@ -1670,6 +2069,83 @@
     };
   }
 
+  function stackedColumnYs(ids, span, minGap) {
+    const list = (ids || []).slice().sort((a, b) =>
+      String(a).localeCompare(String(b), undefined, { numeric: true }));
+    const map = new Map();
+    const n = list.length;
+    if (!n) return map;
+    if (n === 1) {
+      map.set(list[0], 0);
+      return map;
+    }
+    const gap = minGap || 96;
+    const usedSpan = Math.max((n - 1) * gap, span || (n - 1) * gap);
+    list.forEach((id, i) => {
+      map.set(id, (i / (n - 1) - 0.5) * usedSpan);
+    });
+    return map;
+  }
+
+  /** วาง UZ เป็นคอลัมน์ ระยะพอสำหรับกล่อง + คำอธิบายใต้โหนด — ถ้าเยอะจะแยก 2 แถว */
+  function placeUzColumnStack(ids, xBase, gap, staggerX) {
+    const map = new Map();
+    const list = (ids || []).slice();
+    const n = list.length;
+    if (!n) return map;
+    const g = Math.max(240, gap || 252);
+    const sx = staggerX || 86;
+    function putCol(col, x) {
+      const m = col.length;
+      col.forEach((id, i) => {
+        const y = m <= 1 ? 0 : (i - (m - 1) / 2) * g;
+        map.set(id, { x: x, y: y });
+      });
+    }
+    if (n > 6) {
+      const col0 = [];
+      const col1 = [];
+      list.forEach((id, i) => (i % 2 === 0 ? col0 : col1).push(id));
+      putCol(col0, xBase - sx);
+      putCol(col1, xBase + sx);
+      return map;
+    }
+    putCol(list, xBase);
+    return map;
+  }
+
+  function separatePinnedUzPositions(posMap, minDx, minDy, hw, hh) {
+    const ids = Array.from(posMap.keys());
+    const n = ids.length;
+    if (n < 2) return;
+    for (let iter = 0; iter < 28; iter++) {
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = posMap.get(ids[i]);
+          const b = posMap.get(ids[j]);
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const nx = dx / minDx;
+          const ny = dy / minDy;
+          const d2 = nx * nx + ny * ny;
+          if (d2 >= 1 || d2 <= 1e-8) continue;
+          const d = Math.sqrt(d2);
+          const push = (1 - d) * 0.5;
+          const px = (nx / d) * minDx * push * 0.5;
+          const py = (ny / d) * minDy * push * 0.5;
+          a.x -= px;
+          a.y -= py;
+          b.x += px;
+          b.y += py;
+        }
+      }
+      posMap.forEach(p => {
+        p.x = Math.max(-hw, Math.min(hw, p.x));
+        p.y = Math.max(-hh, Math.min(hh, p.y));
+      });
+    }
+  }
+
   function applyLeftRightLayout(g, is3d, nodeCount, nodes, links) {
     const nc = nodeCount != null ? nodeCount : lastNodeCount;
     const homeGrid = isHomeUzOverview(nodes, links) && !is3d;
@@ -1683,14 +2159,20 @@
       refreshHomeUzLayoutForces(g, nodes, links);
     } else {
       clearHomeUzLayoutPropsOnNodes(nodes);
+      clearNodeFixedPositions(nodes);
       removeHomeUzLayoutForces(g);
+      const isUzDrill = drillState.mode === 'uz';
       if (typeof g.dagMode === 'function') {
-        g.dagMode('lr');
+        g.dagMode(isUzDrill ? null : 'lr');
         if (typeof g.dagLevelDistance === 'function') g.dagLevelDistance(computeDagLevelDistancePx(nc, nodes, links));
         if (typeof g.onDagError === 'function') g.onDagError(() => {});
       }
-      const flowGap = Math.round(computeDagLevelDistancePx(nc, nodes, links) * 0.34);
-      try { g.d3Force('ltrFlow', buildLeftToRightFlowForce(links, flowGap, 0.24)); } catch (e) { /* ignore */ }
+      if (isUzDrill) {
+        try { g.d3Force('ltrFlow', null); } catch (e) { /* ignore */ }
+      } else {
+        const flowGap = Math.round(computeDagLevelDistancePx(nc, nodes, links) * 0.42);
+        try { g.d3Force('ltrFlow', buildLeftToRightFlowForce(links, flowGap, 0.28)); } catch (e) { /* ignore */ }
+      }
     }
     if (is3d && typeof g.numDimensions === 'function') g.numDimensions(2);
     if (typeof g.linkDirectionalParticles === 'function') {
@@ -1705,10 +2187,147 @@
   }
 
   /**
-   * มุมมอง drill UZ: จัดแนวนอนให้สอดคล้องกราฟ Cause→Effect→UZ ปลายทาง
-   * - UZ หลัก (ที่เลือก) อยู่ฝั่งซ้าย
-   * - UZ ปลายทางที่เกิดจาก Effect_Tag ไปเป็น Cause_Tag ใน UZ อื่น อยู่ฝั่งขวา
-   * - UZ ที่ block-link เข้าหลัก (ต้นทางจาก UZ อื่น) อยู่ซ้ายสุดกว่าหลัก
+   * มุมมอง drill UZ ก้าวเดียว: UZ ซ้าย → Command กลาง → ปลายทางขวา
+   */
+  function applyUzCommandHopLayout(g, nodes, links) {
+    if (!g || typeof g.d3Force !== 'function') return;
+    try {
+      g.d3Force('uzRelatedX', null);
+      g.d3Force('uzRelatedY', null);
+    } catch (e) { /* ignore */ }
+    if (typeof d3 === 'undefined' || !drillState.uzBlock) return;
+
+    const el = document.getElementById('graph-container');
+    const W = (el && el.clientWidth) || 920;
+    const H = (el && el.clientHeight) || 680;
+    const uw = W * 0.86;
+    const uh = H * 0.80;
+    const selId = 'uz_' + drillState.uzBlock;
+    const xUz = -uw * 0.34;
+    const xCmd = -uw * 0.02;
+    const xTgt = uw * 0.34;
+    const tgtGap = 78;
+    const groupPad = 36;
+
+    const cmdOrder = ['TRIP', 'CLOSE', 'OPEN', 'DTTM', 'ACTIVATE', 'RESET'];
+    const cmds = (nodes || []).filter(n => n && n.type === 'effect_bundle').sort((a, b) => {
+      const ia = cmdOrder.indexOf(a.bundleActionKey);
+      const ib = cmdOrder.indexOf(b.bundleActionKey);
+      const ra = ia < 0 ? 80 : ia;
+      const rb = ib < 0 ? 80 : ib;
+      if (ra !== rb) return ra - rb;
+      return String(a.bundleActionKey || '').localeCompare(String(b.bundleActionKey || ''));
+    });
+    const targetsOf = new Map();
+    cmds.forEach(c => targetsOf.set(c.id, []));
+    const directTargets = [];
+    (links || []).forEach(l => {
+      if (!l) return;
+      const s = linkEndpointId(l.source);
+      const t = linkEndpointId(l.target);
+      if (l.type === 'effect_bundle_out' && targetsOf.has(s) && t && t !== selId) {
+        const arr = targetsOf.get(s);
+        if (arr.indexOf(t) < 0) arr.push(t);
+      }
+      if (l.type === 'uz-effect' && s === selId && t && t !== selId) {
+        if (directTargets.indexOf(t) < 0) directTargets.push(t);
+      }
+    });
+    targetsOf.forEach(arr => {
+      arr.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+    });
+    directTargets.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+
+    const groups = [];
+    cmds.forEach(c => {
+      groups.push({ cmdId: c.id, ids: targetsOf.get(c.id) || [] });
+    });
+    if (directTargets.length) {
+      groups.push({ cmdId: null, ids: directTargets.filter(id => {
+        let used = false;
+        targetsOf.forEach(arr => { if (arr.indexOf(id) >= 0) used = true; });
+        return !used;
+      }) });
+    }
+
+    const pos = new Map();
+    pos.set(selId, { x: xUz, y: 0 });
+
+    const heights = groups.map(g0 => Math.max(tgtGap, Math.max(1, g0.ids.length) * tgtGap));
+    const totalH = heights.reduce((s, h) => s + h, 0) + Math.max(0, groups.length - 1) * groupPad;
+    let yCursor = groups.length ? -Math.min(totalH, uh) / 2 : 0;
+    const scale = totalH > uh && totalH > 0 ? uh / totalH : 1;
+    groups.forEach((g0, gi) => {
+      const h = heights[gi] * scale;
+      const cy = yCursor + h / 2;
+      if (g0.cmdId) pos.set(g0.cmdId, { x: xCmd, y: cy });
+      const gap = g0.ids.length > 1 ? Math.min(tgtGap, h / g0.ids.length) : tgtGap;
+      g0.ids.forEach((tid, i) => {
+        const y = cy + (i - (g0.ids.length - 1) / 2) * gap;
+        if (pos.has(tid) && tid !== selId) {
+          const prev = pos.get(tid);
+          prev.y = (prev.y + y) / 2;
+        } else {
+          pos.set(tid, { x: xTgt, y: y });
+        }
+      });
+      yCursor += h + groupPad * scale;
+    });
+
+    const rightIds = [];
+    pos.forEach((p, id) => {
+      if (id !== selId && Math.abs(p.x - xTgt) < 1) rightIds.push(id);
+    });
+    rightIds.sort((a, b) => (pos.get(a).y - pos.get(b).y) || String(a).localeCompare(String(b)));
+    const minRight = 68;
+    for (let iter = 0; iter < 14; iter++) {
+      for (let i = 0; i < rightIds.length - 1; i++) {
+        const a = pos.get(rightIds[i]);
+        const b = pos.get(rightIds[i + 1]);
+        const dy = b.y - a.y;
+        if (dy >= minRight) continue;
+        const push = (minRight - dy) / 2;
+        a.y -= push;
+        b.y += push;
+      }
+    }
+
+    (nodes || []).forEach(n => {
+      if (!n) return;
+      const p = pos.get(n.id);
+      if (!p) {
+        delete n.fx;
+        delete n.fy;
+        return;
+      }
+      n.fx = p.x;
+      n.fy = p.y;
+      n.x = p.x;
+      n.y = p.y;
+      n.vx = 0;
+      n.vy = 0;
+    });
+
+    if (typeof g.dagLevelDistance === 'function') {
+      g.dagLevelDistance(Math.round(uw * 0.18));
+    }
+    if (typeof d3 === 'undefined') return;
+    const fx = d3.forceX(n => {
+      const p = pos.get(n && n.id);
+      return p ? p.x : 0;
+    }).strength(n => (n && pos.has(n.id)) ? 0.55 : 0);
+    const fy = d3.forceY(n => {
+      const p = pos.get(n && n.id);
+      return p ? p.y : 0;
+    }).strength(n => (n && pos.has(n.id)) ? 0.55 : 0);
+    g.d3Force('uzRelatedX', fx);
+    g.d3Force('uzRelatedY', fy);
+    if (typeof g.d3ReheatSimulation === 'function') g.d3ReheatSimulation();
+  }
+
+  /**
+   * มุมมอง drill UZ แบบเต็ม (คลิก UZ ซ้ำ): Cause/Effect กลางจอ
+   * UZ ที่มี sub node มากกว่า 3 อยู่ซ้าย — UZ ที่มี 1–3 อยู่ขวา
    */
   function applyRelatedUzLeftOfSelectedForce(g, nodeCount, nodes, links) {
     if (!g || typeof g.d3Force !== 'function') return;
@@ -1718,6 +2337,10 @@
     } catch (e) { /* ignore */ }
     if (typeof d3 === 'undefined' || !graphData) return;
     if (drillState.mode !== 'uz' || !drillState.uzBlock) return;
+    if (drillState.uzShowCauses !== true) {
+      applyUzCommandHopLayout(g, nodes, links);
+      return;
+    }
     const selId = 'uz_' + drillState.uzBlock;
     const upstream = new Set();
     const downstream = new Set();
@@ -1727,18 +2350,20 @@
     const visUz = new Set((nodes || []).filter(n => n && n.type === 'uzblock').map(n => n.id));
     const visIds = new Set((nodes || []).map(n => n.id));
 
-    // คอลัมน์ 2: Cause ใน UZ หลัก
     (nodes || []).forEach(n => {
       if (n && n.type === 'cause' && n.uzBlock === drillState.uzBlock) mainCauseIds.add(n.id);
     });
-    // คอลัมน์ 3: Effect ที่มาจาก Cause ใน UZ หลัก
     (graphData.links || []).forEach(l => {
       if (!l || l.type !== 'effect') return;
       const s = linkEndpointId(l.source);
       const t = linkEndpointId(l.target);
       if (mainCauseIds.has(s) && visIds.has(t)) mainEffectIds.add(t);
     });
-    // คอลัมน์ 4: Cause ปลายทางที่ถูกเปิดด้วย Effect_Tag
+    if (drillState.uzShowCauses === false) {
+      (nodes || []).forEach(n => {
+        if (n && n.type === 'effect' && visIds.has(n.id)) mainEffectIds.add(n.id);
+      });
+    }
     (graphData.links || []).forEach(l => {
       if (!l || l.type !== 'cause-link') return;
       const s = linkEndpointId(l.source);
@@ -1748,7 +2373,6 @@
       downstreamCauseIds.add(t);
       if (cn.uzBlock) downstream.add('uz_' + cn.uzBlock);
     });
-    // กันพลาด: ถ้าในวิวมี cause-link ข้าม UZ อยู่แล้ว ให้ถือว่า UZ ปลายทางนั้นอยู่ฝั่งขวาเสมอ
     (links || []).forEach(l => {
       if (!l || l.type !== 'cause-link') return;
       const t = linkEndpointId(l.target);
@@ -1764,8 +2388,6 @@
       if (t === selId && s !== selId) upstream.add(s);
       if (s === selId && t !== selId) downstream.add(t);
     });
-    // รองรับกรณีไม่มี block-link โดยอนุมานจาก cause-link:
-    // effect จาก UZ หลัก -> cause ใน UZ อื่น => UZ อื่นเป็นปลายทางฝั่งขวา
     (graphData.links || []).forEach(l => {
       if (!l || l.type !== 'cause-link') return;
       const effId = linkEndpointId(l.source);
@@ -1781,42 +2403,185 @@
       });
       if (fromMain) downstream.add(toUzId);
     });
-    // บังคับเฉพาะโหนดที่แสดงอยู่ในหน้าปัจจุบัน
     [...upstream].forEach(id => { if (!visUz.has(id)) upstream.delete(id); });
     [...downstream].forEach(id => { if (!visUz.has(id)) downstream.delete(id); });
-    const d = computeDagLevelDistancePx(nodeCount, nodes, links);
-    const xUp = -d * 0.9;       // UZ ต้นทาง
-    const xMain = -d * 0.62;    // Main UZ
-    const xCause = -d * 0.14;   // Cause_Tag Number
-    const xEffect = d * 0.24;   // Effect-Tag Number
-    const xCauseTo = d * 0.62;  // Cause ปลายทาง
-    const xDown = d * 1.18;     // UZ ปลายทางจาก Effect_Tag (ดันขวาชัดเจน)
+    downstream.delete(selId);
+    upstream.delete(selId);
+    visUz.forEach(id => {
+      if (id !== selId && !upstream.has(id)) downstream.add(id);
+    });
+
+    const el = document.getElementById('graph-container');
+    const W = (el && el.clientWidth) || 920;
+    const H = (el && el.clientHeight) || 680;
+    const uw = W * 0.90;
+    const uh = H * 0.84;
+    const visCauseIds = (nodes || []).filter(n => n && n.type === 'cause').map(n => n.id);
+    const hasCauses = visCauseIds.length > 0;
+    const xCause = 0;
+    const xCmd = hasCauses ? 250 : 0;
+    const xEffect = hasCauses ? 430 : 0;
+    const yCause = stackedColumnYs(visCauseIds, 0, 128);
+    const yEffect = stackedColumnYs(Array.from(mainEffectIds), 0, 64);
+    if (hasCauses && mainEffectIds.size) {
+      mainEffectIds.forEach(eid => {
+        const ys = [];
+        (graphData.links || []).concat(links || []).forEach(l => {
+          if (!l) return;
+          const typ = l.type || '';
+          if (typ !== 'effect' && typ !== 'effect_bundle_out' && typ !== 'uz-effect') return;
+          const s = linkEndpointId(l.source);
+          const t = linkEndpointId(l.target);
+          if (t !== eid) return;
+          if (yCause.has(s)) ys.push(yCause.get(s));
+        });
+        if (ys.length) yEffect.set(eid, ys.reduce((a, b) => a + b, 0) / ys.length);
+      });
+      const eids = Array.from(mainEffectIds);
+      for (let iter = 0; iter < 16; iter++) {
+        for (let i = 0; i < eids.length; i++) {
+          for (let j = i + 1; j < eids.length; j++) {
+            const dy = (yEffect.get(eids[j]) || 0) - (yEffect.get(eids[i]) || 0);
+            if (Math.abs(dy) >= 64) continue;
+            const push = (64 - Math.abs(dy || 0.01)) / 2;
+            const sign = dy >= 0 ? 1 : -1;
+            yEffect.set(eids[i], (yEffect.get(eids[i]) || 0) - sign * push);
+            yEffect.set(eids[j], (yEffect.get(eids[j]) || 0) + sign * push);
+          }
+        }
+      }
+    }
+
+    const innerPos = new Map();
+    visCauseIds.forEach(id => innerPos.set(id, { x: xCause, y: yCause.get(id) || 0 }));
+    mainEffectIds.forEach(id => innerPos.set(id, { x: xEffect, y: yEffect.get(id) || 0 }));
+    const cmdsByEffect = new Map();
+    (nodes || []).forEach(n => {
+      if (!n || n.type !== 'effect_bundle') return;
+      const tid = n.effectTargetId || '';
+      if (!cmdsByEffect.has(tid)) cmdsByEffect.set(tid, []);
+      cmdsByEffect.get(tid).push(n);
+    });
+    cmdsByEffect.forEach((arr, tid) => {
+      arr.sort((a, b) => String(a.bundleActionKey || '').localeCompare(String(b.bundleActionKey || '')));
+      const baseY = yCause.get(tid) != null ? yCause.get(tid) : (yEffect.get(tid) || 0);
+      arr.forEach((n, i) => {
+        const y = baseY + (i - (arr.length - 1) / 2) * 30;
+        innerPos.set(n.id, { x: xCmd, y: y });
+      });
+    });
+
+    function countUzSubNodes(uzId) {
+      const ub = String(uzId || '').replace(/^uz_/, '');
+      const subs = new Set();
+      (nodes || []).forEach(nd => {
+        if (!nd || nd.type === 'uzblock') return;
+        if (nd.uzBlock === ub) subs.add(nd.id);
+      });
+      (links || []).forEach(l => {
+        if (!l) return;
+        const s = linkEndpointId(l.source);
+        const t = linkEndpointId(l.target);
+        const other = s === uzId ? t : (t === uzId ? s : null);
+        if (!other || other === uzId || !visIds.has(other)) return;
+        const on = graphData.nodeById.get(other);
+        if (on && on.type !== 'uzblock') subs.add(other);
+      });
+      (graphData.links || []).forEach(l => {
+        if (!l || l.type !== 'cause-link') return;
+        const t = linkEndpointId(l.target);
+        const cn = graphData.nodeById.get(t);
+        if (!cn || cn.uzBlock !== ub) return;
+        if (visIds.has(t)) subs.add(t);
+      });
+      return subs.size;
+    }
+
+    const SPARSE_MAX = 3;
+    const uzCounts = new Map();
+    const leftUz = [];
+    const rightUz = [];
+    visUz.forEach(id => {
+      const c = countUzSubNodes(id);
+      uzCounts.set(id, c);
+      if (c > SPARSE_MAX) leftUz.push(id);
+      else rightUz.push(id);
+    });
+    const byCountThenName = (desc) => (a, b) => {
+      const d = (uzCounts.get(a) || 0) - (uzCounts.get(b) || 0);
+      if (d) return desc ? -d : d;
+      return String(a).localeCompare(String(b), undefined, { numeric: true });
+    };
+    leftUz.sort(byCountThenName(true));
+    rightUz.sort(byCountThenName(false));
+
+    const xLeft = -Math.max(uw * 0.42, 340);
+    const xRight = Math.max(uw * 0.42, 340);
+    const uzGap = 260;
+    const uzPos = new Map();
+    placeUzColumnStack(leftUz, xLeft, uzGap, 92).forEach((p, id) => uzPos.set(id, p));
+    placeUzColumnStack(rightUz, xRight, uzGap, 92).forEach((p, id) => uzPos.set(id, p));
+
+    (nodes || []).forEach(n => {
+      if (!n) return;
+      if (n.type !== 'uzblock') {
+        const ip = innerPos.get(n.id);
+        if (ip) {
+          n.fx = ip.x;
+          n.fy = ip.y;
+          n.x = ip.x;
+          n.y = ip.y;
+          n.vx = 0;
+          n.vy = 0;
+        } else {
+          delete n.fx;
+          delete n.fy;
+          if (n.type === 'effect_bundle') n.x = xCmd;
+        }
+        return;
+      }
+      const p = uzPos.get(n.id);
+      if (!p) return;
+      n.fx = p.x;
+      n.fy = p.y;
+      n.x = p.x;
+      n.y = p.y;
+      n.vx = 0;
+      n.vy = 0;
+    });
+
+    if (typeof g.dagLevelDistance === 'function') {
+      g.dagLevelDistance(Math.round(uw * 0.12));
+    }
+
     const fx = d3.forceX(n => {
       if (!n) return 0;
-      if (mainCauseIds.has(n.id)) return xCause;
-      if (mainEffectIds.has(n.id) || n.type === 'effect_bundle') return xEffect;
-      if (downstreamCauseIds.has(n.id)) return xCauseTo;
-      if (upstream.has(n.id)) return xUp;
-      if (n.id === selId) return xMain;
-      if (downstream.has(n.id)) return xDown;
+      if (n.type === 'cause') return xCause;
+      if (mainEffectIds.has(n.id)) return xEffect;
+      if (n.type === 'effect_bundle') return xCmd;
+      const p = uzPos.get(n.id);
+      if (p) return p.x;
       return 0;
     }).strength(n => {
       if (!n) return 0;
-      if (mainCauseIds.has(n.id) || mainEffectIds.has(n.id) || downstreamCauseIds.has(n.id)) return 0.22;
-      if (downstream.has(n.id)) return 0.44;
-      if (upstream.has(n.id) || n.id === selId) return 0.29;
+      if (n.type === 'uzblock') return 0;
+      if (innerPos.has(n.id) || n.type === 'effect_bundle') return 0.42;
       return 0;
     });
     g.d3Force('uzRelatedX', fx);
-    // ล็อกกึ่งกลางแนวตั้งเฉพาะคอลัมน์สำคัญให้ดูเป็นชั้นเหมือนแบบตัวอย่าง
     const fy = d3.forceY(n => {
       if (!n) return 0;
-      if (n.id === selId || upstream.has(n.id) || downstream.has(n.id)) return 0;
-      if (mainCauseIds.has(n.id) || mainEffectIds.has(n.id) || downstreamCauseIds.has(n.id)) return 0;
+      if (n.type === 'uzblock') {
+        const p = uzPos.get(n.id);
+        return p ? p.y : 0;
+      }
+      const ip = innerPos.get(n.id);
+      if (ip) return ip.y;
       return 0;
     }).strength(n => {
-      if (!n) return 0;
-      if (mainCauseIds.has(n.id) || mainEffectIds.has(n.id) || downstreamCauseIds.has(n.id)) return 0.08;
+      if (!n || n.type === 'uzblock') return 0;
+      if (innerPos.has(n.id)) return 0.42;
+      if (n.type === 'effect_bundle') return 0.22;
       return 0;
     });
     g.d3Force('uzRelatedY', fy);
@@ -1825,32 +2590,57 @@
 
   function applyNodeSeparation(g, nodeCount, nodes, links) {
     if (typeof g.d3Force !== 'function') return;
+    if (isHomeUzOverview(nodes, links)) {
+      neutralizeHomeSimForces(g);
+      return;
+    }
     const dist = computeLinkBasePx(nodeCount, nodes, links);
     const nc = nodeCount || 0;
+    const uzDrill = drillState.mode === 'uz';
+    const hopView = isUzCommandHopView();
     const linkF = g.d3Force('link');
     if (linkF && typeof linkF.distance === 'function') {
       linkF.distance(link => {
         const t = link.type || '';
+        if (hopView) {
+          if (t === 'effect_bundle_in') return Math.max(dist * 1.85, 150);
+          if (t === 'effect_bundle_out') return Math.max(dist * 1.55, 130);
+          if (t === 'uz-effect') return Math.max(dist * 2.05, 180);
+        }
         if (t === 'contains') return Math.max(dist * 1.2, 92);
-        if (t === 'effect') return Math.max(dist * 2.15, 158);
-        if (t === 'cause-link') return Math.max(dist * 2.35, 172);
+        if (t === 'effect') return Math.max(dist * (uzDrill ? 2.05 : 2.15), uzDrill ? 148 : 158);
+        if (t === 'cause-link') return Math.max(dist * (uzDrill ? 1.85 : 2.35), uzDrill ? 140 : 172);
         if (t === 'drill-next-uz') return Math.max(dist * 2.55, 190);
-        if (t === 'uz-effect') return Math.max(dist * 2.15, 158);
+        if (t === 'uz-effect') return Math.max(dist * (uzDrill ? 1.55 : 2.15), uzDrill ? 118 : 158);
         if (t === 'effect_bundle_in') return Math.max(dist * 1.75, 132);
         if (t === 'effect_bundle_out') return Math.max(dist * 1.25, 88);
-        if (t === 'block-link') return Math.max(dist * 2.05, 148);
+        if (t === 'block-link') return Math.max(dist * (uzDrill ? 1.65 : 2.05), uzDrill ? 128 : 148);
         if (t === 'detail-link') return Math.max(dist * 1.45, 112);
         return Math.max(dist * 1.85, 128);
       });
     }
+    if (linkF && typeof linkF.strength === 'function') {
+      linkF.strength(link => {
+        const t = (link && link.type) || '';
+        if (hopView) return 0.08;
+        if (!uzDrill) return 0.72;
+        if (t === 'uz-effect' || t === 'block-link') return 0.10;
+        if (t === 'cause-link') return 0.16;
+        return 0.55;
+      });
+    }
     const ch = g.d3Force('charge');
     if (ch && typeof ch.strength === 'function') {
+      if (hopView) {
+        ch.strength(-40);
+      } else {
       let str = -255;
       if (nc > 450) str = -165;
       else if (nc > 280) str = -195;
       else if (nc > 120) str = -225;
       else if (nc <= 15) str = -310;
       ch.strength(str);
+      }
     }
     if (typeof g.d3VelocityDecay === 'function') g.d3VelocityDecay(nc > 350 ? 0.52 : 0.44);
     const heavy = nc > 450;
@@ -1859,10 +2649,16 @@
         if (!heavy) {
           g.d3Force('collide', d3.forceCollide()
             .radius(n => {
-              if (n.type === 'uzblock') return 50;
+              if (hopView) {
+                if (n.type === 'uzblock') return 96;
+                if (n.type === 'effect_bundle') return 36;
+                if (n.type === 'cause') return 70;
+                return 52;
+              }
+              if (n.type === 'uzblock') return uzDrill ? 118 : 88;
               if (n.type === 'cause') return 138;
-              if (n.type === 'effect') return 60;
-              if (n.type === 'effect_bundle') return 22;
+              if (n.type === 'effect') return uzDrill ? 68 : 60;
+              if (n.type === 'effect_bundle') return 40;
               if (n.type === 'detail_desc') return 104;
               if (n.type === 'detail_tag') return 40;
               return 24;
@@ -1872,10 +2668,10 @@
         } else {
           g.d3Force('collide', d3.forceCollide()
             .radius(n => {
-              if (n.type === 'uzblock') return 38;
+              if (n.type === 'uzblock') return uzDrill ? 104 : 72;
               if (n.type === 'cause') return 98;
-              if (n.type === 'effect') return 44;
-              if (n.type === 'effect_bundle') return 18;
+              if (n.type === 'effect') return uzDrill ? 52 : 44;
+              if (n.type === 'effect_bundle') return 32;
               if (n.type === 'detail_desc') return 82;
               if (n.type === 'detail_tag') return 32;
               return 18;
@@ -1889,6 +2685,37 @@
   }
 
   let selectedNode = null;
+
+  function wrapUzDescription(ctx, text, maxWidth, maxLines) {
+    const raw = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!raw) return [];
+    const limit = Math.max(1, maxLines || 2);
+    const words = raw.split(' ');
+    const lines = [];
+    let line = '';
+    for (let i = 0; i < words.length; i++) {
+      const trial = line ? (line + ' ' + words[i]) : words[i];
+      if (!line || ctx.measureText(trial).width <= maxWidth) {
+        line = trial;
+      } else {
+        lines.push(line);
+        line = words[i];
+        if (lines.length >= limit) {
+          line = '';
+          break;
+        }
+      }
+    }
+    if (line && lines.length < limit) lines.push(line);
+    if (lines.length > limit) lines.length = limit;
+    const usedWords = lines.join(' ').split(' ').filter(Boolean).length;
+    if (usedWords < words.length && lines.length) {
+      let last = lines[lines.length - 1];
+      while (last.length > 1 && ctx.measureText(last + '…').width > maxWidth) last = last.slice(0, -1);
+      lines[lines.length - 1] = last + '…';
+    }
+    return lines;
+  }
 
   function effectDescriptionText(eff, maxLen) {
     if (!eff) return '—';
@@ -2070,13 +2897,17 @@
   function bumpZoomToFit() {
     const gi = graphInstance;
     if (!gi || typeof gi.zoomToFit !== 'function') return;
-    const dur = 520;
+    const dur = isHomePageView() ? 280 : 520;
     const el = document.getElementById('graph-container');
     const m = Math.min((el && el.clientWidth) || 800, (el && el.clientHeight) || 600);
-    const pad = Math.max(24, Math.min(96, Math.round(m * (1 - VIEWPORT_LAYOUT_FRACTION) / 2)));
+    const pad = isHomePageView()
+      ? Math.max(12, Math.round(m * 0.028))
+      : Math.max(24, Math.min(96, Math.round(m * (1 - VIEWPORT_LAYOUT_FRACTION) / 2)));
     setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 40);
-    setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 320);
-    setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 780);
+    if (!isHomePageView()) {
+      setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 320);
+      setTimeout(() => { try { gi.zoomToFit(dur, pad); } catch (e) {} }, 780);
+    }
   }
 
   function snapshotViewState() {
@@ -2320,6 +3151,27 @@
       return;
     }
 
+    if (isUzCommandHopView() && node.type === 'cause' && node.uzBlock && node.uzBlock !== drillState.uzBlock) {
+      pushNavHistory();
+      drillState = { mode: 'uz', uzBlock: node.uzBlock, uzShowCauses: false };
+      isolatedSet = getUzDrilldownSetEffectsOnly(graphData, node.uzBlock);
+      showRelationPanel(graphData.nodeById.get('uz_' + node.uzBlock) || node);
+      initGraph();
+      return;
+    }
+
+    if (isUzCommandHopView() && node.type === 'effect') {
+      const hopTag = normalizeTag(node.effectTag || '');
+      if (hopTag && graphData.uzBlocks.has(hopTag) && hopTag !== drillState.uzBlock) {
+        pushNavHistory();
+        drillState = { mode: 'uz', uzBlock: hopTag, uzShowCauses: false };
+        isolatedSet = getUzDrilldownSetEffectsOnly(graphData, hopTag);
+        showRelationPanel(graphData.nodeById.get('uz_' + hopTag) || node);
+        initGraph();
+        return;
+      }
+    }
+
     if (node.type === 'cause') {
       pushNavHistory();
       isolatedSet = getOneStepNextSet(graphData, node.id);
@@ -2499,19 +3351,22 @@
             const short = raw.length > 120 ? raw.slice(0, 117) + '...' : raw;
             ctx.fillText(short, node.x, y + 14 / scale, boxW - 16 / scale);
           } else if (node.type === 'effect_bundle') {
-            const rad = 16 / scale;
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, rad, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(40,48,64,0.94)';
+            const lab = String(node.bundleActionKey || 'CMD');
+            const boxW = Math.max(58, 12 + lab.length * 8) / scale;
+            const boxH = 24 / scale;
+            const x = node.x - boxW / 2;
+            const y = node.y - boxH / 2;
+            roundRect(x, y, boxW, boxH, 7 / scale);
+            const accent = actionAccentColor(lab);
+            ctx.fillStyle = 'rgba(22,22,32,0.94)';
             ctx.fill();
-            ctx.lineWidth = 2 / scale;
-            ctx.strokeStyle = 'rgba(186,198,220,0.9)';
+            ctx.lineWidth = 1.8 / scale;
+            ctx.strokeStyle = accent;
             ctx.stroke();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'rgba(248,250,252,0.95)';
-            ctx.font = (9 / scale) + 'px "Segoe UI", sans-serif';
-            const lab = String(node.bundleActionKey || '').slice(0, 7);
+            ctx.fillStyle = accent;
+            ctx.font = '600 ' + (11 / scale) + 'px "Segoe UI", sans-serif';
             ctx.fillText(lab, node.x, node.y);
           } else if (node.type === 'uzblock') {
             const tag = node.uzBlock || '-';
@@ -2542,15 +3397,21 @@
             ctx.font = (12 / scale) + 'px "Segoe UI", sans-serif';
             ctx.fillText(tag, node.x, node.y);
 
-            // Drilldown view: show UZ BLOCK_Description below UZ node.
+            // Drilldown view: UZ BLOCK_Description ใต้กล่อง — ตัดบรรทัดให้กว้างเท่ากล่อง ไม่ทับโหนดข้างเคียง
             if (!isHomePageView() && node.uzDesc) {
               const descRaw = String(node.uzDesc).replace(/\s+/g, ' ').trim();
-              const descShort = descRaw.length > 72 ? (descRaw.slice(0, 69) + '...') : descRaw;
-              const descY = y + boxH + 6 / scale;
+              const descMaxW = boxW - 8 / scale;
+              const lineH = 13 / scale;
+              ctx.textAlign = 'center';
               ctx.textBaseline = 'top';
-              ctx.fillStyle = 'rgba(205,215,240,0.92)';
+              ctx.fillStyle = (homeStroke && dimUz) ? 'rgba(168,168,182,0.5)' : 'rgba(205,215,240,0.92)';
               ctx.font = (10.5 / scale) + 'px "Segoe UI", sans-serif';
-              ctx.fillText(descShort, node.x, descY, 220 / scale);
+              const descLines = wrapUzDescription(ctx, descRaw, descMaxW, 2);
+              let descY = y + boxH + 6 / scale;
+              descLines.forEach(ln => {
+                ctx.fillText(ln, node.x, descY, descMaxW);
+                descY += lineH;
+              });
             }
           } else {
             // Small tags for Effect / others
@@ -2601,10 +3462,11 @@
 
           ctx.restore();
         })
-        .linkDirectionalArrowLength(4)
-        .linkDirectionalArrowRelPos(0.56)
+        .linkDirectionalArrowLength(link => isUzCommandHopView() ? 8 : 4)
+        .linkDirectionalArrowRelPos(link => isUzCommandHopView() ? 0.78 : 0.56)
         .linkWidth(linkWidthForGraph)
         .linkCurvature(link => {
+          if (isUzCommandHopView()) return 0;
           if (link.type === 'detail-link') return 0;
           if (link.type === 'effect_bundle_out') return 0;
           if (link.type === 'effect_bundle_in') return 0.06;
@@ -2638,21 +3500,16 @@
       // freeze simulation เพื่อกันความหน่วง โดยยังให้ interactions ทำงานต่อได้
       if (typeof g.cooldownTicks === 'function') {
         let ticks = initialView ? 280 : Math.min(420 + Math.floor((data.nodes.length || 0) * 0.85), 820);
-        if (isHomeUzOverview(data.nodes, data.links)) {
-          ticks = Math.min(200, Math.max(96, 72 + Math.floor((data.nodes.length || 0) * 5)));
-        }
+        if (isHomeUzOverview(data.nodes, data.links)) ticks = 0;
+        if (isUzCommandHopView()) ticks = 36;
         g.cooldownTicks(ticks);
       }
       applyLeftRightLayout(g, false, data.nodes.length, data.nodes, data.links);
       applyNodeSeparation(g, data.nodes.length, data.nodes, data.links);
       applyRelatedUzLeftOfSelectedForce(g, data.nodes.length, data.nodes, data.links);
       if (isHomeUzOverview(data.nodes, data.links)) {
+        homeUzAmbientActive = true;
         if (typeof g.autoPauseRedraw === 'function') g.autoPauseRedraw(false);
-        if (typeof g.onEngineStop === 'function') {
-          g.onEngineStop(() => {
-            if (graphInstance === g && isHomePageView()) homeUzAmbientActive = true;
-          });
-        }
         if (typeof g.onRenderFramePre === 'function') {
           g.onRenderFramePre(() => {
             if (homeUzAmbientActive && graphInstance === g) applyHomeUzAmbientDrawOffset();
